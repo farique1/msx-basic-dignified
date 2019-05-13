@@ -144,10 +144,10 @@ Line numbers can be padded with zeroes, this helps to review the converted code 
 101 GOTO 1
 ``` 
 **Labels**
-- *Label conversions*
-Handle how labels are converted.
-`ini: handle_label_lines = ` `arg: -ll {0,1,2}` `Default: 0`
-The labels can be left, as default, on a `rem` line with its name (option `0`) or without it (option `1`)  as an anchor and reminder; the branching lines are directed to the label line itself. Or they can be stripped altogether (option `2`), leaving a smaller, more concise code; the code flow is directed to the line mediately after where the label was.
+- *Label conversions*  
+Handle how labels are converted.  
+`ini: handle_label_lines = ` `arg: -ll {0,1,2}` `Default: 0`  
+The labels can be left, as default, on a `rem` line with its name (option `0`) or without it (option `1`)  as an anchor and reminder; the branching lines are directed to the label line itself. Or they can be stripped altogether (option `2`), leaving a smaller, more concise code; the code flow is then directed to the line mediately after where the label was.
 ###
 `msxbadig.py test.bas`
 ```basic
@@ -355,6 +355,6 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEyOTMxNjY1ODAsLTE5MzkxNDgyMjFdfQ
+eyJoaXN0b3J5IjpbLTIwNTQ2MDA0MTksLTE5MzkxNDgyMjFdfQ
 ==
 -->
