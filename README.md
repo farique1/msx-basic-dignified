@@ -24,8 +24,9 @@ Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabme
 ## Features and usage
 ### Standard behaviour
 
-Run with `msxbadig.py [source] [destination] args...`
-`msxbadig.py` reads a text file containing the modern source code and write back a text file with the MSX Basic conformed code. If no `[destination]` name is given, the file will be saved as `[source]_.ext` (a single underscore after the original name)
+Run with `msxbadig.py [source] [destination] args...`  
+`msxbadig.py` reads a text file containing the modern source code and write back a text file with the MSX Basic conformed code.   
+If no `[destination]` name is given, the file will be saved as `[source]_.ext` (a single underscore after the original name)
 
 **MBD** is highly configurable and can use the built in settings, an .ini file or command line instructions with an order of priority inverse to that.
 
@@ -351,5 +352,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTY2ODAzNTM3MywtMTkzOTE0ODIyMV19
+eyJoaXN0b3J5IjpbNzA2Nzg3NDkzLC0xOTM5MTQ4MjIxXX0=
 -->
