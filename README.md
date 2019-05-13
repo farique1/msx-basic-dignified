@@ -49,7 +49,10 @@ return
 ```
 
 - Branching instructions are done with **labels**.  
- Labels are created using curly brackets`{like_this}` and strongly advised to only contain letters, numbers and underscore.  `{@}` points to its own line (abraço, Giovanni!). Orphan labels and labels not following the naming convention are converted with `{{label}}` (double brackets) and higlighted when using [`MSX Basic.sublime-syntax`]() *More on labels later.*
+ Labels are created using curly brackets`{like_this}` and strongly advised to only contain letters, numbers and underscore.  
+ `{@}` points to its own line (abraço, Giovanni!).  
+Orphan labels and labels not following the naming convention are converted with `{{label}}` (double brackets) and higlighted when using [`MSX Basic.sublime-syntax`]().  
+*More on labels later.*
 ```basic
 {hello_loop}
 print "hello world "; 
@@ -63,7 +66,8 @@ if inkey$ = "" then goto {@} else goto {hello_loop}
 ```
 
 
-- **Defines** are used to create aliases on the code that are replaced upon conversion. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many as necessary. `[?@]x,y` is a built in **Define** that becomes `LOCATEx,y:PRINT`
+- **Defines** are used to create aliases on the code that are replaced upon conversion. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many defines as necessary.  
+`[?@]x,y` is a built in **Define** that becomes `LOCATEx,y:PRINT`
 ```basic
 define [ifa] [if a$ = ]
 [ifa]"1" then print "um"
@@ -351,5 +355,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNDY5NzM1MTYsLTE5MzkxNDgyMjFdfQ==
+eyJoaXN0b3J5IjpbMTc2OTc4Mjg4OCwtMTkzOTE0ODIyMV19
 -->
