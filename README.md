@@ -31,8 +31,7 @@ Run with `msxbadig.py [source] [destination] args...`
 
 >From now on, when showing code, usually the first excerpt is the source, followed by the program call and the converted output.
 
-- The MSX Basic 'source code' can be written **without line numbers** and **indented** using TAB or spaces.
-*More on these later.*
+- The MSX Basic 'source code' can be written **without line numbers** and **indented** using TAB or spaces. *More on these later.*
 ```basic
 {count_loop}
 	for f = 1 to 10
@@ -50,9 +49,7 @@ return
 ```
 
 - Branching instructions are done with **labels**.
- Labels are created using curly brackets`{like_this}` and strongly advised to only contain letters, numbers and underscore.
- `{@}` points to its own line (fala aê, Giovanni!).
-Orphan labels and labels not following the naming convention are indicated with `{{label}}` and higlighted when using `MSX Basic.sublime-syntax`
+ Labels are created using curly brackets`{like_this}` and strongly advised to only contain letters, numbers and underscore.  `{@}` points to its own line (abraço, Giovanni!). Orphan labels and labels not following the naming convention are indicated with `{{label}}` on conversion and higlighted when using `MSX Basic.sublime-syntax`
 *More on labels later.*
 ```basic
 {hello_loop}
@@ -355,7 +352,7 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTU3NjQ0MDYzNCwxNDQ4NjU3MzI4LDU3Nj
-U4OTg4MCwtOTc1MTMxNzQsLTEzODg0MDA4NDksLTU0MTg0NjQ5
-OV19
+eyJoaXN0b3J5IjpbLTIwODY0NDU3NzQsMTQ0ODY1NzMyOCw1Nz
+Y1ODk4ODAsLTk3NTEzMTc0LC0xMzg4NDAwODQ5LC01NDE4NDY0
+OTldfQ==
 -->
