@@ -15,7 +15,7 @@ And so this project is (for now) an atrocious example of Python coding.
 
 I felt the need for something like this when I was redoing **Change Graph Kit**, an MSX program I did back in the day, just to see how much I could improve it. I coded on Sublime and used Excel, REM tags and a lot of patience to add line numbers, not pretty.
 
-Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration'.
+Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration'.
 
 > There is a syntax highlight, a theme and a comment setting available for Sublime 3 [here]() to improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.
 
@@ -356,6 +356,6 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTkzNDIxMzUyNywtOTc1MTMxNzQsLTEzOD
-g0MDA4NDksLTU0MTg0NjQ5OV19
+eyJoaXN0b3J5IjpbNTc2NTg5ODgwLC05NzUxMzE3NCwtMTM4OD
+QwMDg0OSwtNTQxODQ2NDk5XX0=
 -->
