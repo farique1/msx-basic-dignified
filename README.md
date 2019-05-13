@@ -126,8 +126,8 @@ The number of the first line.
 The line number increment amount.  
 `ini: line_step = ` `arg: -lp #` `Default: 10`
 
-- *Add leading zeros*
-Line numbers can be padded with zeroes, this helps to review the converted code on an editor.
+- *Add leading zeros*  
+Line numbers can be padded with zeroes, this helps to review the converted code on an editor.  
 `ini: leading_zeros = ` `arg: -lz` `Default: False`
 ###
 `msxbadig.py test.bas -ls 5 -lp 5`
@@ -355,5 +355,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTYxOTc1NzU1NiwtMTkzOTE0ODIyMV19
+eyJoaXN0b3J5IjpbLTc0MjQ0Nzg4LC0xOTM5MTQ4MjIxXX0=
 -->
