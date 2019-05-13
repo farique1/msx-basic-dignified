@@ -12,6 +12,7 @@ And so this project was born.
 And so this project is (for now) an atrocious example of Python coding.
 
 **MSX Basic Dignified** allows you to code MSX Basic programs using modern coding standards on your preferred editor, convert them to the old MSX Basic structure and load into an MSX (emulated or not.)
+
 I felt the need for something like this when I was redoing **Change Graph Kit**, an MSX program I did back in the day, just to see how much I could improve it.
 
 Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration'.
@@ -355,5 +356,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTU0MTg0NjQ5OV19
+eyJoaXN0b3J5IjpbLTEzODg0MDA4NDksLTU0MTg0NjQ5OV19
 -->
