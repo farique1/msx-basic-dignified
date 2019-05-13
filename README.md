@@ -268,12 +268,11 @@ next
 40 NEXT
 ```
 
-**Comments**
-The conversion needs `REM`s on occasion to keep some original formatting; they can be redefined as such:
+**Comments**  
+The conversion needs `REM`s on occasion to keep some original formatting; they can be redefined as such:  
 
-- *Labels `REM` format*
-When converted, **labels** are put on `REM` lines. By default they all are applied as `'` (option `s`).
-They can, however, be told to use the regular form (option `rem`) : 
+- *Labels `REM` format*  
+When converted, **labels** are put on `REM` lines. By default they all are applied as `'` (option `s`). They can, however, be told to use the regular form (option `rem`) :  
 `ini: label_rem_format =`  `arg: -lr {s,rem}`  `Default: s`
 
 - *Regular `REM` format*
@@ -356,5 +355,6 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbOTYyMjIwNzc0LC0xOTM5MTQ4MjIxXX0=
+eyJoaXN0b3J5IjpbLTE0NzI1NTIxMzgsLTE5MzkxNDgyMjFdfQ
+==
 -->
