@@ -1,7 +1,7 @@
 # MSX Basic Dignified
-**Or: My First Python Project.**
-
+**Or: My First Python Project.**  
 Or: How to learn a new language?
+
 - Find something that doesn't exist.
 - This thing must be useful to someone.
 - Bonus if you once really wanted it to exist.
@@ -80,7 +80,8 @@ define [ifa] [if a$ = ]
 20 IF A$ = "2" THEN PRINT "dois"
 30 LOCATE 10,10:PRINT "quatro"
 ```
-- Multi line instructions can be **joined** using `:` or `_` to form a single line. Colons are retained, separating instructions, and can be used at the end or beginning of a line. Underscores are deleted and can join broken instructions. `endif`s can be used but are for cosmetical or organisational purpose only. They are stripped upon conversion without any check or validation.
+- Multi line instructions can be **joined** using `:` or `_` to form a single line. Colons are retained, separating instructions, and can be used at the end or beginning of a line. Underscores are deleted and can join broken instructions.  
+`endif`s can be used but are for cosmetical or organisational purpose only. They are stripped upon conversion without any check or validation.
 ```basic
 if a$ = "C" then _
 	for f = 1 to 10:
@@ -94,7 +95,8 @@ endif
 ```basic
 10 IF A$ = "C" THEN FOR F = 1 TO 10:LOCATE 1,1:PRINT F:NEXT:LOCATE 1,3:PRINT "done":END
 ```
-- The source code can use exclusive **comments** `##` that are stripped on the conversion. Regular `rem`s are kept. (a bug keep the `##` if there is a `"` after it)
+- The source code can use exclusive **comments** `##` that are stripped on the conversion.  
+Regular `rem`s are kept. (a bug keep the `##` if there is a `"` after it)
 ```
 ## this will not be converted
 rem this will
@@ -355,5 +357,6 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTc2OTc4Mjg4OCwtMTkzOTE0ODIyMV19
+eyJoaXN0b3J5IjpbLTEyOTI0OTg1MzAsLTE5MzkxNDgyMjFdfQ
+==
 -->
