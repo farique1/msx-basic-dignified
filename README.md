@@ -180,18 +180,18 @@ Add a `:rem` at the end of the line with the label names used on the branching i
 30 GOTO 10:' {print_result}
 ```
 **Blank lines**  
-Blank lines are stripped from the source by default but they can be left as can extra lines be added for clarity and organization.
+Blank lines are stripped from the source by default but they can be left. Extra lines can also be added close to labels for clarity and organization.
 
-- *Keep blank lines*
-Do not erase blank lines on the converted code, keep them with `rem`.
+- *Keep blank lines*  
+Do not erase blank lines on the converted code, keep them with `rem`.  
 `ini: keep_blank_lines = ` `arg: -bl` `Default: False`
 
-- Add line before a label
-Add a blank line **before** a label. (has no effect if opted to strip labels)
+- Add line before a label  
+Add a blank line **before** a label. (has no effect if opted to strip labels)  
 `ini: rem_bef_label = ` `arg: -br` `Default: False`
 
-- Add line after a label
-Add a blank line **after** a label. (has no effect if opted to strip labels)
+- Add line after a label  
+Add a blank line **after** a label. (has no effect if opted to strip labels)  
 `ini: rem_aft_label = ` `arg: -ar` `Default: False`
 
 ```basic
@@ -357,5 +357,6 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExMjQ2OTk0MywtMTkzOTE0ODIyMV19
+eyJoaXN0b3J5IjpbLTE3NDg0MTA0MDgsLTE5MzkxNDgyMjFdfQ
+==
 -->
