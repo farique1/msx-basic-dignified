@@ -90,7 +90,7 @@ endif
 ```basic
 10 IF A$ = "C" THEN FOR F = 1 TO 10:LOCATE 1,1:PRINT F:NEXT:LOCATE 1,3:PRINT "done":END
 ```
-- The source code can use exclusive **comments** `##` that are stripped on the conversion. Regular `rem`s are kept. (a bug keep the `##` if there is an `"` after it)
+- The source code can use exclusive **comments** `##` that are stripped on the conversion. Regular `rem`s are kept. (a bug keep the `##` if there is a `"` after it)
 ```
 ## this will not be converted
 rem this will
@@ -98,8 +98,7 @@ rem this will
 ```
 
 ### Configurable arguments
-Most of **MBD** functionality is configurable through an .ini file (`ini: ...`) or command line arguments (`arg: ...`) as follow.
-You can generate the .ini file with the `-ini` argument.
+Most of **MBD** functionality is configurable through an .ini file (`ini: ...`) or command line arguments (`arg: ...`) as follow. You can generate the .ini file with the `-ini` argument.
 
 **Files**
 - *Source file*
@@ -349,7 +348,7 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEzMDA2MzkxMjUsMTQ0ODY1NzMyOCw1Nz
-Y1ODk4ODAsLTk3NTEzMTc0LC0xMzg4NDAwODQ5LC01NDE4NDY0
-OTldfQ==
+eyJoaXN0b3J5IjpbNzAyNTM2NDE1LDE0NDg2NTczMjgsNTc2NT
+g5ODgwLC05NzUxMzE3NCwtMTM4ODQwMDg0OSwtNTQxODQ2NDk5
+XX0=
 -->
