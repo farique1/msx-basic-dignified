@@ -104,7 +104,8 @@ rem this will
 ```
 
 ### Configurable arguments
-Most of **MBD** functionality is configurable through an .ini file (`ini: ...`) or command line arguments (`arg: ...`) as follow. You can generate the .ini file with the `-ini` argument.
+Most of **MBD** functionality is configurable through an .ini file (`ini: ...`) or command line arguments (`arg: ...`) as follow.  
+You can generate the .ini file with the `-ini` argument.
 
 **Files**
 - *Source file*  
@@ -112,20 +113,17 @@ The modern formatted code file to be read.
 `ini: source_file = ` `arg: <source>` 
 
 - *Destination file*  
-
-MSX Basic formatted code file to be saved.
-
-`ini: destin_file = ` `args: <> <destination>`
-
+MSX Basic formatted code file to be saved.  
+`ini: destin_file = ` `args: <> <destination>`  
 `<source>_.ext`  will be used if no name is given.
 
 **Numbering**
-- *Starting line number*
-The number of the first line.
+- *Starting line number*  
+The number of the first line.  
 `ini: line_start = ` `arg: -ls #` `Default: 10`
 
-- *Line step value*
-The line numbering increment amount.
+- *Line step value*  
+The line numbering increment amount.  
 `ini: line_step = ` `arg: -lp #` `Default: 10`
 
 - *Add leading zeros*
@@ -357,6 +355,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEyOTI0OTg1MzAsLTE5MzkxNDgyMjFdfQ
-==
+eyJoaXN0b3J5IjpbMTQ4MzEwMzcwMiwtMTkzOTE0ODIyMV19
 -->
