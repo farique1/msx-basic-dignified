@@ -63,8 +63,7 @@ if inkey$ = "" then goto {@} else goto {hello_loop}
 ```
 
 
-- **Defines** are used to create aliases on the code that are replaced upon conversion. They are created with `Define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many as necessary.
-`[?@]x,y` is a built in **Define** that becomes `LOCATEx,y:PRINT`
+- **Defines** are used to create aliases on the code that are replaced upon conversion. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many as necessary. `[?@]x,y` is a built in **Define** that becomes `LOCATEx,y:PRINT`
 ```basic
 define [ifa] [if a$ = ]
 [ifa]"1" then print "um"
@@ -351,7 +350,7 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbOTY0NTIzNjE5LDE0NDg2NTczMjgsNTc2NT
-g5ODgwLC05NzUxMzE3NCwtMTM4ODQwMDg0OSwtNTQxODQ2NDk5
-XX0=
+eyJoaXN0b3J5IjpbMTQzNDU4OTQzMSwxNDQ4NjU3MzI4LDU3Nj
+U4OTg4MCwtOTc1MTMxNzQsLTEzODg0MDA4NDksLTU0MTg0NjQ5
+OV19
 -->
