@@ -49,8 +49,7 @@ return
 ```
 
 - Branching instructions are done with **labels**.
- Labels are created using curly brackets`{like_this}` and strongly advised to only contain letters, numbers and underscore.  `{@}` points to its own line (abraço, Giovanni!). Orphan labels and labels not following the naming convention are indicated with `{{label}}` on conversion and higlighted when using `MSX Basic.sublime-syntax`
-*More on labels later.*
+ Labels are created using curly brackets`{like_this}` and strongly advised to only contain letters, numbers and underscore.  `{@}` points to its own line (abraço, Giovanni!). Orphan labels and labels not following the naming convention are indicated with `{{label}}` on conversion and higlighted when using [`MSX Basic.sublime-syntax`]() *More on labels later.*
 ```basic
 {hello_loop}
 print "hello world "; 
@@ -352,7 +351,7 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIwODY0NDU3NzQsMTQ0ODY1NzMyOCw1Nz
-Y1ODk4ODAsLTk3NTEzMTc0LC0xMzg4NDAwODQ5LC01NDE4NDY0
-OTldfQ==
+eyJoaXN0b3J5IjpbOTY0NTIzNjE5LDE0NDg2NTczMjgsNTc2NT
+g5ODgwLC05NzUxMzE3NCwtMTM4ODQwMDg0OSwtNTQxODQ2NDk5
+XX0=
 -->
