@@ -221,12 +221,12 @@ Add a number of spaces **after** the instruction separating character (`:`) on m
 `ini: nnbr_spaces_aft_colon = ` `arg: -ac #` `Default: 0`  
 
 - *Amount of general spacing*  
-The conversion automatically strips all blanks (**spaces** or **TAB**s) on the code (not including indents or `:`) leaving only 1 space throughout. This amount can be changed with:
-`ini: nmbr_spaces_general = ` `arg: -gs #` `Default: 1`
+The conversion automatically strips all blanks (**spaces** and **TAB**s) on the code (not including indents or `:`) leaving only 1 space throughout. This amount can be changed with:  
+`ini: nmbr_spaces_general = ` `arg: -gs #` `Default: 1`  
 
-- *Keep original spaces*
-Mantains the original spacing used on the source code (**TAB**s and all).
-`ini: keep_original_spaces = ` `arg: -ks` `Default: False`
+- *Keep original spaces*  
+Mantains the original spacing used on the source code (**TAB**s and all).  
+`ini: keep_original_spaces = ` `arg: -ks` `Default: False`  
 
 ```basic
 for f = 10  to 7  :read a: print a  : next
@@ -239,8 +239,8 @@ for f = 100 to 300:read a: print a+1: next
 20 FORF=0TO9 :READA :PRINTA :NEXT
 30 FORF=100TO300 :READA :PRINTA+1 :NEXT
 ```
-**Indentation**
-MBD by default also strips all indentation used on the source code.
+**Indentation**  
+**MBD** by default also strips all indentation used on the source code.
 This can be mitigated and refined in three ways.
 
 - *Keep indentation*
@@ -357,5 +357,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbODAwMTU2ODY4LC0xOTM5MTQ4MjIxXX0=
+eyJoaXN0b3J5IjpbMjAyOTI2OTk5MCwtMTkzOTE0ODIyMV19
 -->
