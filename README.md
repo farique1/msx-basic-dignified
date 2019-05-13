@@ -8,7 +8,7 @@ Or: How to learn a new language?
 - But the fate of the world should not rest upon it
 - Sit down and do it on the language you want to learn. 
 
-And so this project was born.
+And so this project was born.  
 And so this project is (for now) an atrocious example of Python coding.
 
 **MSX Basic Dignified** allows you to code MSX Basic programs using modern coding standards on your preferred editor, convert them to the old MSX Basic structure and load into an MSX (emulated or not.)
@@ -103,7 +103,8 @@ Most of **MBD** functionality is configurable through an .ini file (`ini: ...`) 
 **Files**
 - *Source file*  
 The modern formatted code file to be read.  
-`ini: source_file = ` `arg: <source>`  
+`ini: source_file = ` `arg: <source>` 
+
 - *Destination file*  
 
 MSX Basic formatted code file to be saved.
@@ -350,5 +351,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE5MzkxNDgyMjFdfQ==
+eyJoaXN0b3J5IjpbLTY2ODAzNTM3MywtMTkzOTE0ODIyMV19
 -->
