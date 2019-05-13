@@ -296,12 +296,11 @@ All **pre existing** `REM`s can be changed to maintain coherence along the conve
 ```
 
 **General conversions**
-- *Capitalise*
-By default all text is **capitalised**, with the exception of `""`, `{labels}` and `REM`s
-This can be controlled with:
-`ini: capitalize_all =`  `arg: -nc`  `Default: True`
+- *Capitalise*  
+By default all text is **capitalised**, with the exception of `""`, `{labels}`, `REM`s and `DATA`s.  This can be controlled with:  
+`ini: capitalize_all =`  `arg: -nc`  `Default: True`  
 
-- *Convert `?` to `PRINT`*
+- *Convert `?` to `PRINT`*  
 `?` as `PRINT` are left alone on the conversion, they can be told to become `PRINT` with:
 `ini: convert_interr_to_print =`  `arg: -cp`  `Default: False`
 
@@ -354,5 +353,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTYxNDE4NzgxMSwtMTkzOTE0ODIyMV19
+eyJoaXN0b3J5IjpbLTkzNDM3OTA1MiwtMTkzOTE0ODIyMV19
 -->
