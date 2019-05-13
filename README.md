@@ -336,15 +336,15 @@ Help is available using:
 
 - *Verbose*  
 Set increasing leves of feedback given by the program.  
-`ini: verbose_level =`  `arg: -vb {0,1,2,3}`  `Default: 2`
-`0` gives nothing, `1` shows the conversion steps, `2` the default, error and warning messages and `3` everything else.
+`ini: verbose_level =`  `arg: -vb {0,1,2,3}`  `Default: 2`  
+`0` gives nothing, `1` shows the conversion steps, `2` the default, error and warning messages and `3` everything else.  
 
-- *Use the `.ini` file*
-If the `.ini` file configuration should be used or not, allowing it to be disabled in place.
-`ini: use_ini_file =` `Default: True`
+- *Use the `.ini` file*  
+Tells if the `.ini` file settings should be used or not, allowing it to be disabled in place.  
+`ini: use_ini_file =` `Default: True`  
 
-- *Write the `.ini` file*
-Rewites the `.ini` file in case its is missing.
+- *Write the `.ini` file*  
+Rewites the `.ini` file in case its is missing.  
 
 ## Technicalities and warnings
 ### Yes, they are one and the same
@@ -352,5 +352,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjY4NDQ5MDQ0LC0xOTM5MTQ4MjIxXX0=
+eyJoaXN0b3J5IjpbLTk3NDkwMzEzOSwtMTkzOTE0ODIyMV19
 -->
