@@ -1,5 +1,6 @@
 # MSX Basic Dignified
 **Or: My First Python Project.**
+
 Or: How to learn a new language?
 - Find something that doesn't exist.
 - This thing must be useful to someone.
@@ -354,5 +355,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEzNzQ4MTM1ODVdfQ==
+eyJoaXN0b3J5IjpbLTU0MTg0NjQ5OSwtMTM3NDgxMzU4NV19
 -->
