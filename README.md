@@ -273,15 +273,14 @@ The conversion needs `REM`s on occasion to keep some original formatting; they c
 
 - *Labels `REM` format*  
 When converted, **labels** are put on `REM` lines. By default they all are applied as `'` (option `s`). They can, however, be told to use the regular form (option `rem`) :  
-`ini: label_rem_format =`  `arg: -lr {s,rem}`  `Default: s`
+`ini: label_rem_format =`  `arg: -lr {s,rem}`  `Default: s`  
 
-- *Regular `REM` format*
-Some **non label** `REM`s are also created sometimes, They are also applied as `'` (option `s`).
-They can, however, be told to use the regular form (option `rem`) :
-`ini: regul_rem_format =`  `arg: -rr {s,rem}`  `Default: s`
+- *Regular `REM` format*  
+Some **non label** `REM`s are also created sometimes, They are also applied as `'` (option `s`). They can, however, be told to use the regular form (option `rem`) :  
+`ini: regul_rem_format =`  `arg: -rr {s,rem}`  `Default: s`  
 
-- *Convert all `REM`s*
-All **pre existing** `REM`s can be changed to maintain coherence along the converted code. They will use the previously set conditions.
+- *Convert all `REM`s*  
+All **pre existing** `REM`s can be changed to maintain coherence along the converted code. They will conform to the two conditions above.  
 `ini: convert_rem_formats =`  `arg: -cr`  `Default: False`
 
 ```basic
@@ -355,6 +354,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE0NzI1NTIxMzgsLTE5MzkxNDgyMjFdfQ
-==
+eyJoaXN0b3J5IjpbMTYxNDE4NzgxMSwtMTkzOTE0ODIyMV19
 -->
