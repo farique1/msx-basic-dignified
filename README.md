@@ -208,19 +208,19 @@ Add a blank line **after** a label. (has no effect if opted to strip labels)
 40 '
 50 GOTO 10
 ```
-**Spacing**
+**Spacing**  
 Spacing and indentation are automatically streamlined and removed from the converted code.
-This behaviour can be configured, however, to suit personal tastes.
+This behaviour can be configured, however.
 
-- *Number of spaces before `:`*
-Add a number of spaces **before** the instruction separating character (`:`) on multi instruction lines.
-`ini: nnbr_spaces_bef_colon = ` `arg: -bc #` `Default: 0`
+- *Number of spaces before `:`*  
+Add a number of spaces **before** the instruction separating character (`:`) on multi instruction lines.  
+`ini: nnbr_spaces_bef_colon = ` `arg: -bc #` `Default: 0`  
 
-- *Number of spaces after `:`*
-Add a number of spaces **after** the instruction separating character (`:`) on multi instruction lines.
-`ini: nnbr_spaces_aft_colon = ` `arg: -ac #` `Default: 0`
+- *Number of spaces after `:`*  
+Add a number of spaces **after** the instruction separating character (`:`) on multi instruction lines.  
+`ini: nnbr_spaces_aft_colon = ` `arg: -ac #` `Default: 0`  
 
-- *Amount of general spacing*
+- *Amount of general spacing*  
 The conversion automatically strips all blanks (**spaces** or **TAB**s) on the code (not including indents or `:`) leaving only 1 space throughout. This amount can be changed with:
 `ini: nmbr_spaces_general = ` `arg: -gs #` `Default: 1`
 
@@ -357,6 +357,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE3NDg0MTA0MDgsLTE5MzkxNDgyMjFdfQ
-==
+eyJoaXN0b3J5IjpbODAwMTU2ODY4LC0xOTM5MTQ4MjIxXX0=
 -->
