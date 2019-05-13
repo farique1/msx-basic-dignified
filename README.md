@@ -251,9 +251,8 @@ Change the default amount of **spaces** per **TAB**.
 `ini: indent_tab_spaces =`  `arg: -si #`  `Default: 2`  
 
 - *Keep space characters on indents*  
-**Spaces** to fine tune that tough indent (don't do this!) usually become too much on the conversion, they are removed by default but can be kept.
-T
-`ini: keep_indent_space_chars =`  `arg: -ci`  `Default: False`
+If **spaces** are being used to indent the code, this will keep them.  
+`ini: keep_indent_space_chars =`  `arg: -ci`  `Default: False`  
 
 ```basic
 for f = 1 to 200
@@ -357,6 +356,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE4NDM4MTUzMzQsLTE5MzkxNDgyMjFdfQ
-==
+eyJoaXN0b3J5IjpbOTYyMjIwNzc0LC0xOTM5MTQ4MjIxXX0=
 -->
