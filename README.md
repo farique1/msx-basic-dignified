@@ -1,4 +1,4 @@
-# MSX Basic Dignified
+![# MSX Basic Dignified](https://github.com/farique1/msx-basic-dignified/blob/master/Images/msxbadig-logo.png)
 **Or: My First Python Project.**  
 Or: How to learn a new language?
 
@@ -19,7 +19,7 @@ Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabme
 
 > There is a syntax highlight, a theme and a comment setting available for Sublime 3 [here]() to improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.
 
->Please, be aware that **MBD** is by no mean a finished product and is expected to misbehave sometimes. 
+>Please, be aware that **MBD** is by no mean a finished product and is expected to misbehave. 
 
 ## Features and usage
 ### Standard behaviour
@@ -352,5 +352,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTk3NDkwMzEzOSwtMTkzOTE0ODIyMV19
+eyJoaXN0b3J5IjpbMTA0MTAzOTAyMl19
 -->
