@@ -11,7 +11,7 @@ import argparse
 import ConfigParser
 
 # Config
-fileeLad = ''# Source file
+fileeLad = ''		# Source file
 fileeSve = ''		# Destination file
 linesSrt = 10		# Start line number
 linesStp = 10		# Line step amount
