@@ -1,4 +1,4 @@
-# MSX Basic Dignified
+![# MSX Basic Dignified](https://github.com/farique1/msx-basic-dignified/blob/master/Images/msxbadig-logo.png)
 **Or: My First Python Project.**  
 Or: How to learn a new language?
 
@@ -17,9 +17,9 @@ I felt the need for something like this when I was redoing **Change Graph Kit**,
 
 Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration'.
 
-> There is a syntax highlight, a theme and a comment setting available for Sublime 3 [here]() to improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.
+> There is a [syntax highlight, a theme and a comment setting](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools) available for Sublime 3 to help improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.
 
->Please, be aware that **MBD** is by no mean a finished product and is expected to misbehave sometimes. 
+>Please, be aware that **MBD** is by no mean a finished product and is expected to misbehave. 
 
 ## Features and usage
 ### Standard behaviour
@@ -32,7 +32,7 @@ Run with `msxbadig.py [source] [destination] args...`
 >From now on, when showing code, usually the first excerpt is the source, followed by the program call and the converted output.
 
 - The MSX Basic 'source code' can be written **without line numbers** and **indented** using TAB or spaces. *More on these later.*
-```basic
+```BlitzBasic
 {count_loop}
 	for f = 1 to 10
 		print f; 
@@ -40,7 +40,7 @@ Run with `msxbadig.py [source] [destination] args...`
 return
 ```
 `msxbadig.py test.bas`
-```basic
+```BlitzBasic
 10 ' {count_loop}
 20 FOR f = 1 TO 10
 30 PRINT F;
@@ -51,15 +51,15 @@ return
 - Branching instructions are done with **labels**.  
  Labels are created using curly brackets`{like_this}` and strongly advised to only contain letters, numbers and underscore.  
  `{@}` points to its own line (abraço, Giovanni!).  
-Orphan labels and labels not following the naming convention are converted with `{{label}}` (double brackets) and higlighted when using [`MSX Basic.sublime-syntax`]().  
+Orphan labels and labels not following the naming convention are converted with `{{label}}` (double brackets) and higlighted when using [`MSX Basic.sublime-syntax`](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools).  
 *More on labels later.*
-```basic
+```BlitzBasic
 {hello_loop}
 print "hello world "; 
 if inkey$ = "" then goto {@} else goto {hello_loop}
 ```
 `msxbadig.py test.bas`
-```basic
+```BlitzBasic
 10 ' {hello_loop}
 20 PRINT "hello world "; 
 30 IF INKEY$ = "" THEN GOTO 30 ELSE GOTO 10
@@ -68,21 +68,21 @@ if inkey$ = "" then goto {@} else goto {hello_loop}
 
 - **Defines** are used to create aliases on the code that are replaced upon conversion. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many defines as necessary.  
 `[?@]x,y` is a built in **Define** that becomes `LOCATEx,y:PRINT`
-```basic
+```BlitzBasic
 define [ifa] [if a$ = ]
 [ifa]"1" then print "um"
 [ifa]"2" then print "dois"
 [?@]10,10 "quatro"
 ```
 `msxbadig.py test.bas`
-```basic
+```BlitzBasic
 10 IF A$ = "1" THEN PRINT "um"
 20 IF A$ = "2" THEN PRINT "dois"
 30 LOCATE 10,10:PRINT "quatro"
 ```
 - Multi line instructions can be **joined** using `:` or `_` to form a single line. Colons are retained, separating instructions, and can be used at the end or beginning of a line. Underscores are deleted and can join broken instructions.  
 `endif`s can be used but are for cosmetical or organisational purpose only. They are stripped upon conversion without any check or validation.
-```basic
+```BlitzBasic
 if a$ = "C" then _
 	for f = 1 to 10:
 		locate 1,1:print f:
@@ -92,7 +92,7 @@ if a$ = "C" then _
 endif
 ```
 `msxbadig.py test.bas`
-```basic
+```BlitzBasic
 10 IF A$ = "C" THEN FOR F = 1 TO 10:LOCATE 1,1:PRINT F:NEXT:LOCATE 1,3:PRINT "done":END
 ```
 - The source code can use exclusive **comments** `##` that are stripped on the conversion.  
@@ -131,14 +131,14 @@ Line numbers can be padded with zeroes, this helps to review the converted code 
 `ini: leading_zeros = ` `arg: -lz` `Default: False`  
 ###
 `msxbadig.py test.bas -ls 5 -lp 5`
-```basic
+```BlitzBasic
 5 PRINT "Say something"
 10 DO$ = "Do something"
 15 GOTO 5
 ```
 ###
 `msxbadig.py test.bas -ls 1 -lp 50 -lz`
-```basic
+```BlitzBasic
 001 PRINT "Say something"
 051 DO$ = "Do something"
 101 GOTO 1
@@ -150,21 +150,21 @@ Handle how labels are converted.
 The labels can be left, as default, on a `rem` line with its name (option `0`) or without it (option `1`)  as an anchor and reminder; the branching lines are directed to the label line itself. Or they can be stripped altogether (option `2`), leaving a smaller, more concise code; the code flow is then directed to the line mediately after where the label was.
 ###
 `msxbadig.py test.bas`
-```basic
+```BlitzBasic
 10 ' {print_result}
 20 PRINT "Result ";
 30 GOTO 10
 ```
 ###
 `msxbadig.py test.bas -ll 1`
-```basic
+```BlitzBasic
 10 '
 20 PRINT "Result ";
 30 GOTO 10
 ```
 ###
 `msxbadig.py test.bas -ll 2`
-```basic
+```BlitzBasic
 10 PRINT "Result ";
 20 GOTO 10
 ```
@@ -174,7 +174,7 @@ Show labels on lines with branching instructions.
 Add a `:rem` at the end of the line with the label names used on the branching instructions.
 
 `msxbadig.py test.bas -sl`
-```basic
+```BlitzBasic
 10 ' {print_result}
 20 PRINT "Result ";
 30 GOTO 10:' {print_result}
@@ -194,14 +194,14 @@ Add a blank line **before** a label. (has no effect if opted to strip labels)
 Add a blank line **after** a label. (has no effect if opted to strip labels)  
 `ini: rem_aft_label = ` `arg: -ar` `Default: False`
 
-```basic
+```BlitzBasic
 {print_result}
 	PRINT "Result ";
 	
 	GOTO {print_result}
 ```
 `msxbadig.py test.bas -bl -ar`
-```basic
+```BlitzBasic
 10 ' {print_result}
 20 '
 30 PRINT "Result ";
@@ -228,13 +228,13 @@ The conversion automatically strips all blanks (**spaces** and **TAB**s) on the 
 Mantains the original spacing used on the source code (**TAB**s and all).  
 `ini: keep_original_spaces = ` `arg: -ks` `Default: False`  
 
-```basic
+```BlitzBasic
 for f = 10  to 7  :read a: print a  : next
 for f = 0   to 9  :read a: print a  : next
 for f = 100 to 300:read a: print a+1: next
 ```
 `msxbadig.py test.bas -bc 1 -gs 0`
-```basic
+```BlitzBasic
 10 FORF=10TO7 :READA :PRINTA :NEXT
 20 FORF=0TO9 :READA :PRINTA :NEXT
 30 FORF=100TO300 :READA :PRINTA+1 :NEXT
@@ -254,14 +254,14 @@ Change the default amount of **spaces** per **TAB**.
 If **spaces** are being used to indent the code, this will keep them.  
 `ini: keep_indent_space_chars =`  `arg: -ci`  `Default: False`  
 
-```basic
+```BlitzBasic
 for f = 1 to 200
 	print "Beware"
 	 if f = 100 then print "Middle point reached!"
 next
 ```
 `msxbadig.py test.bas -ki -ci`
-```basic
+```BlitzBasic
 10 FOR F = 1 TO 200
 20   PRINT "Beware"
 30    IF F = 100 THEN PRINT "Middle point reached!"
@@ -283,13 +283,13 @@ Some **non label** `REM`s are also created sometimes, They are also applied as `
 All **pre existing** `REM`s can be changed to maintain coherence along the converted code. They will conform to the two conditions above.  
 `ini: convert_rem_formats =`  `arg: -cr`  `Default: False`
 
-```basic
+```BlitzBasic
 {start_tutorial}
 	print "What tutorial?"
 	rem Nevermid
 ```
 `msxbadig.py test.bas -lr rem -cr`
-```basic
+```BlitzBasic
 10 REM {start_tutorial}
 20 PRINT "What tutorial?"
 30 ' Nevermid
@@ -308,7 +308,7 @@ By default all text is **capitalised**, with the exception of `""`, `{labels}`, 
 MSX Basic doesn't need both `THEN` or `ELSE` and `GOTO` if they are adjacent. The converted code can be told to strip the `THEN`/`ELSE` (option `t`), `GOTO` (option `g`) or they can all, as default, be left alone (option `k`)  
 `ini: strip_then_goto =`  `arg: -tg {t,g,k}`  `Default: k`
 
-```basic
+```BlitzBasic
 {at_last}
 	? "What?"
 	if me$ = "Come again!" then goto {at_last} else goto {i_agree}
@@ -318,7 +318,7 @@ MSX Basic doesn't need both `THEN` or `ELSE` and `GOTO` if they are adjacent. Th
 	rem That is all folks
 ```
 `msxbadig.py test.bas -nc -cp -tg g`
-```basic
+```BlitzBasic
 10 ' {at_last}
 20 print "What?"
 30 if me$ = "Come again!" then 10 else 60
@@ -352,5 +352,5 @@ Rewites the `.ini` file in case its is missing.
 **MSX Basic Dignfied** was made  to run on a Mac OS stock Python installation, version 2.7.10.
 The process of creating **MBD** was basically that I opened Sublime, Google and Terminal with zero Python knowledge and five days latter here we are (plus twoish more days to write this and understand Git (hey, I'm old))
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTk3NDkwMzEzOSwtMTkzOTE0ODIyMV19
+eyJoaXN0b3J5IjpbMTA0MTAzOTAyMl19
 -->
