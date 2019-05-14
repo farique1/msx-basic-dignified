@@ -152,6 +152,12 @@ Handle how labels are converted.
 `ini: handle_label_lines` `arg: -ll {0,1,2}` `Default: 0`  
 The labels can be left, as default, on a `rem` line with its name (option `0`) or without it (option `1`)  as an anchor and reminder; the branching lines are directed to the label line itself. Or they can be stripped altogether (option `2`), leaving a smaller, more concise code; the code flow is then directed to the line mediately after where the label was.
 ###
+```BlitzBasic
+{print_result}
+	print "Result ";
+goto {print_result}
+```
+###
 `msxbadig.py test.bas`
 ```BlitzBasic
 10 ' {print_result}
@@ -293,7 +299,7 @@ All **pre existing** `REM`s can be changed to maintain coherence along the conve
 ```
 `msxbadig.py test.bas -lr rem -cr`
 ```BlitzBasic
-10 REM {start_tutorial}
+10 REM {start_tutorial}  
 20 PRINT "What tutorial?"
 30 ' Nevermid
 ```
