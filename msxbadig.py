@@ -1,9 +1,14 @@
 """
 MSX Basic Dignified  
 Converts modern typed MSX Basic to native format.  
-farique 2019
-Use msxbadig.py -h for help.
-Use MSX Basic.sublime-syntax and MSX Basic.tmTheme for a better experience
+
+Copyright (C) 2019 - Fred Rique (farique) https://github.com/farique1
+
+Better experienced with Basic.sublime-syntax and MSX Basic.tmThem
+https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools
+
+msxbadig.py <source> <destination> [args...]
+msxbadig.py -h for help.
 """
 
 import re
