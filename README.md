@@ -2,7 +2,8 @@
 **Or: My First Python Project.**  
 Or: How to learn a new language?
 
-- Find something that doesn't exist.
+- Find something that doesn't exist.  
+(well, not so much, it turns out)
 - This thing must be useful to someone.
 - Bonus if you once really wanted it to exist.
 - But the fate of the world should not rest upon it
@@ -112,25 +113,25 @@ You can generate the .ini file with the `-ini` argument.
 **Files**
 - *Source file*  
 The modern formatted code file to be read.  
-`ini: source_file = ` `arg: <source>` 
+`ini: source_file` `arg: <source>` 
 
 - *Destination file*  
 MSX Basic formatted code file to be saved.  
-`ini: destin_file = ` `args: <> <destination>`  
+`ini: destin_file` `args: <> <destination>`  
 `<source>_.ext`  will be used if no name is given.
 
 **Numbering**
 - *Starting line number*  
 The number of the first line.  
-`ini: line_start = ` `arg: -ls #` `Default: 10`
+`ini: line_start` `arg: -ls #` `Default: 10`
 
 - *Line step value*  
 The line number increment amount.  
-`ini: line_step = ` `arg: -lp #` `Default: 10`
+`ini: line_step` `arg: -lp #` `Default: 10`
 
 - *Add leading zeros*  
 Line numbers can be padded with zeroes, this helps to review the converted code on an editor.  
-`ini: leading_zeros = ` `arg: -lz` `Default: False`  
+`ini: leading_zeros` `arg: -lz` `Default: False`  
 ###
 `msxbadig.py test.bas -ls 5 -lp 5`
 ```BlitzBasic
@@ -148,7 +149,7 @@ Line numbers can be padded with zeroes, this helps to review the converted code 
 **Labels**
 - *Label conversions*  
 Handle how labels are converted.  
-`ini: handle_label_lines = ` `arg: -ll {0,1,2}` `Default: 0`  
+`ini: handle_label_lines` `arg: -ll {0,1,2}` `Default: 0`  
 The labels can be left, as default, on a `rem` line with its name (option `0`) or without it (option `1`)  as an anchor and reminder; the branching lines are directed to the label line itself. Or they can be stripped altogether (option `2`), leaving a smaller, more concise code; the code flow is then directed to the line mediately after where the label was.
 ###
 `msxbadig.py test.bas`
@@ -172,7 +173,7 @@ The labels can be left, as default, on a `rem` line with its name (option `0`) o
 ```
 - *Show branching labels*  
 Show labels on lines with branching instructions.  
-`ini: show_branches_labels = ` `arg: -sl` `Default: False`  
+`ini: show_branches_labels` `arg: -sl` `Default: False`  
 Add a `:rem` at the end of the line with the label names used on the branching instructions.
 
 `msxbadig.py test.bas -sl`
@@ -186,15 +187,15 @@ Blank lines are stripped from the source by default but they can be left. Extra 
 
 - *Keep blank lines*  
 Do not erase blank lines on the converted code, keep them with `rem`.  
-`ini: keep_blank_lines = ` `arg: -bl` `Default: False`
+`ini: keep_blank_lines` `arg: -bl` `Default: False`
 
 - Add line before a label  
 Add a blank line **before** a label. (has no effect if opted to strip labels)  
-`ini: rem_bef_label = ` `arg: -br` `Default: False`
+`ini: rem_bef_label` `arg: -br` `Default: False`
 
 - Add line after a label  
 Add a blank line **after** a label. (has no effect if opted to strip labels)  
-`ini: rem_aft_label = ` `arg: -ar` `Default: False`
+`ini: rem_aft_label` `arg: -ar` `Default: False`
 
 ```BlitzBasic
 {print_result}
@@ -216,19 +217,19 @@ This behaviour can be configured, however.
 
 - *Number of spaces before `:`*  
 Add a number of spaces **before** the instruction separating character (`:`) on multi instruction lines.  
-`ini: nnbr_spaces_bef_colon = ` `arg: -bc #` `Default: 0`  
+`ini: nnbr_spaces_bef_colon` `arg: -bc #` `Default: 0`  
 
 - *Number of spaces after `:`*  
 Add a number of spaces **after** the instruction separating character (`:`) on multi instruction lines.  
-`ini: nnbr_spaces_aft_colon = ` `arg: -ac #` `Default: 0`  
+`ini: nnbr_spaces_aft_colon` `arg: -ac #` `Default: 0`  
 
 - *Amount of general spacing*  
 The conversion automatically strips all blanks (**spaces** and **TAB**s) on the code (not including indents or `:`) leaving only 1 space throughout. This amount can be changed with:  
-`ini: nmbr_spaces_general = ` `arg: -gs #` `Default: 1`  
+`ini: nmbr_spaces_general` `arg: -gs #` `Default: 1`  
 
 - *Keep original spaces*  
 Mantains the original spacing used on the source code (**TAB**s and all).  
-`ini: keep_original_spaces = ` `arg: -ks` `Default: False`  
+`ini: keep_original_spaces` `arg: -ks` `Default: False`  
 
 ```BlitzBasic
 for f = 10  to 7  :read a: print a  : next
@@ -246,15 +247,15 @@ for f = 100 to 300:read a: print a+1: next
 
 - *Keep indentation*  
 Try to maintain the original indentation. **TAB**s are converted to **spaces** (2 by default).  
-`ini: keep_indent =`  `arg: -ki`  `Default: False`  
+`ini: keep_indent` `arg: -ki`  `Default: False`  
 
 - *Number of spaces per TAB on indentation*  
 Change the default amount of **spaces** per **TAB**.  
-`ini: indent_tab_spaces =`  `arg: -si #`  `Default: 2`  
+`ini: indent_tab_spaces` `arg: -si #`  `Default: 2`  
 
 - *Keep space characters on indents*  
 If **spaces** are being used to indent the code, this will keep them.  
-`ini: keep_indent_space_chars =`  `arg: -ci`  `Default: False`  
+`ini: keep_indent_space_chars` `arg: -ci`  `Default: False`  
 
 ```BlitzBasic
 for f = 1 to 200
@@ -275,15 +276,15 @@ The conversion needs `REM`s on occasion to keep some original formatting; they c
 
 - *Labels `REM` format*  
 When converted, **labels** are put on `REM` lines. By default they all are applied as `'` (option `s`). They can, however, be told to use the regular form (option `rem`) :  
-`ini: label_rem_format =`  `arg: -lr {s,rem}`  `Default: s`  
+`ini: label_rem_format`  `arg: -lr {s,rem}`  `Default: s`  
 
 - *Regular `REM` format*  
 Some **non label** `REM`s are also created sometimes, They are also applied as `'` (option `s`). They can, however, be told to use the regular form (option `rem`) :  
-`ini: regul_rem_format =`  `arg: -rr {s,rem}`  `Default: s`  
+`ini: regul_rem_format`  `arg: -rr {s,rem}`  `Default: s`  
 
 - *Convert all `REM`s*  
 All **pre existing** `REM`s can be changed to maintain coherence along the converted code. They will conform to the two conditions above.  
-`ini: convert_rem_formats =`  `arg: -cr`  `Default: False`
+`ini: convert_rem_formats`  `arg: -cr`  `Default: False`
 
 ```BlitzBasic
 {start_tutorial}
@@ -300,15 +301,15 @@ All **pre existing** `REM`s can be changed to maintain coherence along the conve
 **General conversions**
 - *Capitalise*  
 By default all text is **capitalised**, with the exception of `""`, `{labels}`, `REM`s and `DATA`s.  This can be controlled with:  
-`ini: capitalize_all =`  `arg: -nc`  `Default: True`  
+`ini: capitalize_all`  `arg: -nc`  `Default: True`  
 
 - *Convert `?` to `PRINT`*  
 `?` as `PRINT` are left alone on the conversion, they can be told to become `PRINT` with:  
-`ini: convert_interr_to_print =`  `arg: -cp`  `Default: False`  
+`ini: convert_interr_to_print`  `arg: -cp`  `Default: False`  
 
 - *Strip adjacent `THEN`/`ELSE` or `GOTO`s*  
 MSX Basic doesn't need both `THEN` or `ELSE` and `GOTO` if they are adjacent. The converted code can be told to strip the `THEN`/`ELSE` (option `t`), `GOTO` (option `g`) or they can all, as default, be left alone (option `k`)  
-`ini: strip_then_goto =`  `arg: -tg {t,g,k}`  `Default: k`
+`ini: strip_then_goto`  `arg: -tg {t,g,k}`  `Default: k`
 
 ```BlitzBasic
 {at_last}
@@ -338,12 +339,12 @@ Help is available using:
 
 - *Verbose*  
 Set increasing leves of feedback given by the program.  
-`ini: verbose_level =`  `arg: -vb {0,1,2,3}`  `Default: 2`  
+`ini: verbose_level`  `arg: -vb {0,1,2,3}`  `Default: 2`  
 `0` gives nothing, `1` shows the conversion steps, `2` the default, error and warning messages and `3` everything else.  
 
 - *Use the `.ini` file*  
 Tells if the `.ini` file settings should be used or not, allowing it to be disabled in place.  
-`ini: use_ini_file =` `Default: True`  
+`ini: use_ini_file` `Default: True`  
 
 - *Write the `.ini` file*  
 Rewites the `.ini` file in case its is missing.  
