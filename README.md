@@ -18,7 +18,7 @@ I felt the need for something like this when I was redoing **Change Graph Kit**,
 
 Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration'.
 
-> There is a [syntax highlight, a theme and a comment setting](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools) available for Sublime 3 to help improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.
+> There is a [syntax highlight, a theme and a comment setting](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools) available for Sublime Text 3 to help improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.
 
 ![# highlight-overview-small](https://github.com/farique1/msx-basic-dignified/blob/master/Images/highlight-overview-small.png)
 
