@@ -30,6 +30,8 @@ Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabme
 Run with `msxbadig.py [source] [destination] args...`  
 `msxbadig.py` reads a text file containing the modern source code and write back a text file with the MSX Basic conformed code. If no `[destination]` name is given, the file will be saved as `[source]_.ext` (a single underscore after the original name)
 
+>If using special MSX characters the best approach is to open a saved MSX Basic file and edit it, otherwise the text encoding may corrupt the characters on the translation.
+
 **MBD** is highly configurable and can use the built in settings, an .ini file or command line instructions with an order of priority inverse to that.
 
 >From now on, when showing code, usually the first excerpt is the source, followed by the program call and the converted output.
