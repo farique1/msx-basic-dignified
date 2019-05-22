@@ -1,4 +1,6 @@
 ![# MSX Basic Dignified](https://github.com/farique1/msx-basic-dignified/blob/master/Images/msxbadig-logo.png)
+# MSX Basic Dignified
+
 **Or: My First Python Project.**  
 Or: How to learn a new language?
 
