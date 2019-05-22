@@ -27,7 +27,7 @@ contexts:
 
     # Label invalid character (do not catch if more than one interspersed)
     # - match: '{(?:[\w]*[\W]){1,2}[\w^}]*}'
-    - match: '{\w*[\W]+\w*}'
+    - match: '{\w*[^@][\W]+\w*}'
       scope: invalid.msxbasic
 
     # Labels (make not catch empty nor non-word characters)
@@ -50,7 +50,8 @@ contexts:
 
     # Instructions (several are position and context sensitive)
     # review: base key play strig stick pdl pad time date set...
-    - match: (?i:\_(\w+)|\?|auto|beep|bload|bsave|(call)(\sadjust|\spause|\spcmplay|\spcmrec|\b)|circle|clear|cload|close|cls|cmd|color|cont|copy|copy|csave|csrlin|data|(def)(dbl|\s?fn|int|sng|str|\s?usr)|delete|dim|draw|dsko\$|else|end|endif|erase|error|field|files|for|get|gosub|goto|if|input|interval|ipl|kanji|kill|let|line|list|llist|load|locate|lprint|lset|maxfiles|merge|motor|name|new|next|open|out|paint|play(?!(\()| +\()|point|poke|preset|print|pset|put|read|renum|restore|resume|return|rset|run|run|save|screen|(set)(\sadjust|\sbeep|\spage|\spassword|\sprompt|\sscreen|\sscroll|\stitle|\svideo|\b)|sound|sprite\$|sprite|step|stop|swap|then|to|troff|tron|using|vpoke|wait|width|off|on)
+    # catching 'key' if after ^ or : unless folowed by (
+    - match: (?i:\_(\w+)|\?|auto|beep|bload|bsave|(call)(\sadjust|\spause|\spcmplay|\spcmrec|\b)|circle|clear|cload|close|cls|cmd|color|cont|copy|copy|csave|csrlin|data|(def)(dbl|(?=\s?fn)|int|sng|str|\s?usr)|delete|dim|draw|dsko\$|else|end|endif|erase|error|field|files|for|get|gosub|goto|if|input|interval|ipl|kanji|(?<=:|^)\s*key(?!\()|kill|let|line|list|llist|load|locate|lprint|lset|maxfiles|merge|motor|name|new|next|open|out|paint|play(?!(\()| +\()|point|poke|preset|print|pset|put|read|renum|restore|resume|return|rset|run|run|save|screen|(set)(\sadjust|\sbeep|\spage|\spassword|\sprompt|\sscreen|\sscroll|\stitle|\svideo|\b)|sound|sprite\$|sprite|step|stop|swap|then|to|troff|tron|using|vpoke|wait|width|off|on)
       scope: keyword.control.msxbasic
       
     # Functions (several are position and context sensitive)
