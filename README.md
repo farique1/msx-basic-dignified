@@ -18,9 +18,10 @@ And so this project is (for now) an atrocious example of Python coding.
 
 I felt the need for something like this when I was redoing **Change Graph Kit**, an MSX program I did back in the day, just to see how much I could improve it. I coded on Sublime and used Excel, REM tags and a lot of patience to add line numbers, not pretty.
 
-Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration'.
+Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration' but I wanted something even closer to the workflow I have working with other languages.  
 
-> There is a [syntax highlight, a theme and a comment setting](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools) available for Sublime Text 3 to help improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.
+> There is a [syntax highlight, a theme and a comment setting](https://github.com/farique1/MSX-Sublime-Syntax) available for Sublime Text 3 to help improve the **MBD** experience. They work with the rules set by **MBD** but are an all around good MSX Basic syntax.  
+>(There is a possibly not updated copy on this repo.)
 
 ![# highlight-overview-small](https://github.com/farique1/msx-basic-dignified/blob/master/Images/highlight-overview-small.png)
 
