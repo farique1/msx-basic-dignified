@@ -20,8 +20,8 @@ import ConfigParser
 import os.path
 
 # Config
-file_load = '/Users/Farique/Documents/Dev/Change-Graph-Kit/CGK-Source.bas'   # Source file
-file_save = '/Users/Farique/desktop/msx projects/msxdsk1/cgk-clas.bas'       # Destination file
+file_load = ''   # Source file
+file_save = ''       # Destination file
 line_start = 10             # Start line number
 line_step = 10              # Line step amount
 leading_zero = False        # Add leading zeros
