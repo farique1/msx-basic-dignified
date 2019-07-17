@@ -29,7 +29,7 @@ Previous version with the two letters variable limit.
 
 [`CGK_Source_test.bad`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK_Source_test.bad)  
 A non functioning version to test conversions, highlights and build.  
->The highlight observations are for the [`MSX Basic.sublime-syntax`](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools)  
+>The highlight observations are for the [`MSX Basic Sublime Tools`](https://github.com/farique1/MSX-Sublime-Tools)  
 
 
 **Change Graph Kit running after converson.**  
