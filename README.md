@@ -3,7 +3,7 @@
 # MSX Basic Dignified  
   
 ## **`v1.1`**  
- >According to the Semantic Versioning it was supposed to be v2 (slagtly incompatible with the previous version) but I'm not ready yet.  
+ >According to the Semantic Versioning it was supposed to be v2 (slightly incompatible with the previous version) but I'm not ready yet. Go see the [changelog](https://github.com/farique1/msx-basic-dignified/blob/master/changelog.md).
   
 **Or: My First Python Project.**  
 Or: How to learn a new language?  
@@ -16,16 +16,17 @@ Or: How to learn a new language?
 - Sit down and do it on the language you want to learn.  
   
 And so this project was born.  
-And so this project is (~~for now~~ after some messing) an ~~atrocious~~ not incredible example of Python coding.  
+And so this project is (~~for now~~ after some messing) an ~~atrocious~~ still not incredible example of Python coding.  
   
   
 **MSX Basic Dignified** allows you to code MSX Basic programs using modern coding standards on your preferred editor, convert them to the old MSX Basic structure and load it into an MSX (emulated or not.)  
   
-I felt the need for something like this when I was redoing [**Change Graph Kit**](https://github.com/farique1/Change-Graph-Kit), an MSX program I did back in the day, just to see how much I could improve it. I coded on Sublime and used Excel, REM tags and a lot of patience to add line numbers, not pretty.  
+I felt the need for something like this when I was redoing [**Change Graph Kit**](https://github.com/farique1/Change-Graph-Kit), an MSX program I did back in the day, just to see how much I could improve it. I coded on Sublime and used Excel, REM tags and a lot of patience to add line numbers and such, not pretty.  
   
-Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration' but I wanted something even closer to the workflow I have been working with other languages.  
+Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration' but I wanted something even closer to the workflow I have been working on with other languages.  
   
-> There is a [*Syntax Highlight*, a *Theme*, a *Comment Setting* and a *Build System*](https://github.com/farique1/MSX-Sublime-Syntax) available for **Sublime Text 3** working with the **MBD** rules to help improve the overall experience. There is also a Classic MSX Basic syntax  and system to run a program straight from Sublime 3.  
+> There is a [*Syntax Highlight*, a *Theme*, a *Comment Setting* and a *Build System*](https://github.com/farique1/MSX-Sublime-Syntax) available for **Sublime Text 3** working with the **MBD** rules to help improve the overall experience.  
+There is also a specific syntax highlight for the Classic MSX Basic and a system to run the classic Basic straight from Sublime 3.  
   
 ![# Versions.png](https://github.com/farique1/msx-basic-dignified/blob/master/Images/Versions.png)  
   
@@ -45,8 +46,8 @@ Run with `msxbadig.py [source] [destination] args...`
 >From now on, when showing code, usually the first excerpt is the source, followed by the program call and the converted output.  
   
 - The MSX Basic Dignified 'source code' can be written **without line numbers**, **indented** using TAB or spaces and have **long name** variables.  
-Different from the Classic MSX Basic, instructions, functions and variables must be separated by spaces from alphanumeric characters. The Syntax Highlight will reflect this and there are several settings to conform the spacing when the conversion is made.  
-The Dignified source code should have a `.bad` extension to avoid conflict with the classic code and and to better integrate with the supported Sublime tools.  
+Different from the Classic MSX Basic, instructions, functions and variables must be separated by spaces from alphanumeric characters. The MSX Syntax Highlight will reflect this and there are several settings to conform the spacing when the conversion is made.  
+The Dignified source code should have a `.bad` extension to avoid conflict with the classic code and to better integrate with the supported Sublime tools.  
 *More on these later.*  
   
 ```BlitzBasic  
@@ -66,9 +67,9 @@ return
 ```  
   
 - Directing the code flow is done with **labels**.  
-Labels are created using curly brackets`{like_this}` and can be used alone on a line to receive the code flow or on a branching (jump) instruction to direct the flow to the corresponding line label. They can only have letters, numbers and underscore They cannot be only numbers. `{@}` points to its own line (abraço, Giovanni!).  
+Labels are created using curly brackets`{like_this}` and can be used alone on a line to receive the code flow or on a branching (jump) instruction to direct the flow to the corresponding line label. They can only have letters, numbers and underscore and they cannot be only numbers. `{@}` points to its own line (abraço, Giovanni!).  
 Labels marking a section are called line labels and labels on jump instructions  (`GOTO`, `GOSUB`, etc) are called branching labels.  
-Labels not following the naming convention or branching to inexistent line labels will generate an error and stop the conversion. Labels with illegal characters are higlighted when using the Syntax Highlight.  
+Labels not following the naming convention or branching to inexistent line labels will generate an error and stop the conversion. Labels with illegal characters are higlighted when using the MSX Syntax Highlight.  
 *More on labels later.*  
 ```BlitzBasic  
 {hello_loop}  
@@ -106,9 +107,9 @@ To use these variables they must be declared, there are two ways to do that:
 When the first long name is used with an `~` or on a `declare` line a new two letter variable is assigned to it, the next time it is used, even with the `~` the previous assignment is maintained.  
 After it is assigned, a long name variable can be used without the `~` but a variable without the `~` that has not been previously assigned will not be converted, will not even generate any erros or warnings.  
 Classic one and two letters variables can be used normally alongside long names ones, just be aware that the letters at the end of the alphabet are being used up and they may clash with the hard coded ones.  
-A summary of the long and short name associations can be generated on `REM`s at the end of the converted code.  
 The conversion will try to catch illegal variables when declared but is not always perfect so keep an eye on them.  
-The Syntax Highlight will show illegal variables on `declare` lines or when assigned with `~`.  
+The MSX Syntax Highlight will show illegal variables on `declare` lines or when assigned with `~`.  
+A summary of the long and short name associations can be generated on `REM`s at the end of the converted code.  
   
 ```BlitzBasic  
 declare food$, drink  
@@ -122,7 +123,7 @@ endif
 10 IF ZZ$="cake" AND ZZ=3 THEN ZY="belly full":ZY$="now"  
 ```  
 Optional:  
-```  
+```BlitzBasic  
 20 ' ZZ$-food$, ZZ-drink, ZY$-sleep$, ZY-result  
 ```  
   
@@ -131,7 +132,7 @@ Colons `:` can be used at the end of a line (joining the next one) or the beginn
 Underscores `_` can only be used at the end of a line and they are deleted when the line is joined. They are useful to join broken instructions like `IF THEN ELSE`, long quotes or anything that must form a single command on the converted code.  
 `endif`s can be used (not obligatory) but are for cosmetical or organisational purpose only. They must be alone on their lines and are removed upon conversion without any validation regarding to their `IF`s. If they are not alone and are not part of a `DATA`, `REM` or `QUOTE` they will generate a warning but will not be deleted. `endif`s that are part of any of the previous commands but are alone on a line due to a line break will be deleted.  
 Numbers at the start of a line will be removed, generate a warning. Numbers at the beginning of a line after an underscore break `_` will be preserved but numbers at the beginning of a line after a colon `:` break will be removed, even if it is part of a `REM` (there is no need to break a `REM` line with an `:` anyway)  
-All of the warning situations above are highlighted with the Syntax Highlight.  
+All of the warning situations above are highlighted with the MSX Syntax Highlight.  
   
 ```BlitzBasic  
 if a$ = "C" then _  
@@ -148,7 +149,7 @@ endif
 ```  
 - The source code can use exclusive **comments** `##` that are stripped during the conversion.  
 Regular `REM`s are kept. A bug prevents the `##` from being removed if there is a `"` after it.  
-```  
+```BlitzBasic  
 ## this will not be converted  
 rem this will  
 ' this also will  
