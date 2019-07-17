@@ -1,22 +1,36 @@
-# MSX Basic example and conversions
 
-- Source file
+# MSX Basic example and conversions  
 
-[`CGK_source_test.bas`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK_source_test.bas)  
-An MSX Basic test code to showcase some features of **MSX Basic Dignified.**  
-The highlight observations are for the [`MSX Basic.sublime-syntax`](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools)
+**Source file.**  
+
+[`CGK-Source_long_vars.bad`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-Source_long_vars.bad)  
+An MSX Basic program writen the dignified way to showcase the features of **MSX Basic Dignified.**  
+>This version utilizes the new long format variables.
 
 
-- Native MSX Basic converted with different settings.
+**Native MSX Basic converted with different settings.**  
 
-[`CGK_conv_default.bas`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK_conv_default.bas)  
-Converted with no arguments.  
+[`CGK-conv.bas`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-conv.bas)  
+The default conversion with no arguments.  
 
-[`CGK_conv_args_01.bas`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK_conv_args_01.bas)  
-Converted with ` -sl -br`
+[`CGK-cpct.bas`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-cpct.bas)  
+A conversion resulting on a compact code.  
+Arguments: `-gs 0 -ll 2 -cr -tg t`  
 
-[`CGK_conv_args_02.bas`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK_conv_args_02.bas)  
-Converted with `-gs 0 -ll 2`
+[`CGK-info.bas`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-info.bas)  
+A conversion generating a spacious code with lots of info.  
+Arguments: ` -bc 1 -uo -ar -sl -vs 5`  
 
-- Change Graph Kit running after converson.
-![# change-graph-kit](https://github.com/farique1/msx-basic-dignified/blob/master/Images/change-graph-kit.png)
+
+**Other sources.**  
+
+[`CGK-Source.bad`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-Source.bad)  
+Previous version with the two letters variable limit.  
+
+[`CGK_Source_test.bad`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK_Source_test.bad)  
+A non functioning version to test conversions, highlights and build.  
+>The highlight observations are for the [`MSX Basic.sublime-syntax`](https://github.com/farique1/msx-basic-dignified/tree/master/SublimeTools)  
+
+
+**Change Graph Kit running after converson.**  
+![# Change_graph_kit.png](https://github.com/farique1/msx-basic-dignified/blob/master/Images/Change_graph_kit.png)  

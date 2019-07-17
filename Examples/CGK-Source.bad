@@ -1,0 +1,537 @@
+' CHANGE GRAPH KIT
+' v1.2.4
+' Edit uncompressed graphics on MSX binary files on disk
+' Copyright (1984 - 2019) - Fred Rique (farique)
+' https://github.com/farique1/Change-Graph-Kit
+'
+
+DEFINE [teste] [rem teste]
+define [test] [print "test"]
+
+screen 0 :color 15,1,1 :width 40 :key off
+defint a-z
+def fn co (x)=abs(x mod 16+16) mod 16 ' cicle color 0 - 15
+c1=1 :c2=15 :c3=2 :c4=6 ' Colors
+hs = 0 :ov = 0 :go = 0 :kp = 0 ' Toggle refresh, Overview, go overview pos, keys disp page
+wx=0 :wy=0 ' overview curesos position
+
+[?@]12,8 "Insert game disk"
+[?@]11,10 "and press any key."
+
+locate12,8:print "Insert game disk"
+locate11,10:print "and press any key."
+a$ = inkey$: if a$ = "" goto {@}
+cls:[teste]: [test] :[teste]
+
+gn$="" ' comment to enable file request
+if gn$<>"" then goto {inicializacao}
+
+print "Pick a Game" :print "without extension"
+print :print :print :files "*.bin"
+print :print :print :line input "> ";gn$
+
+{inicializacao}
+	cls :screen 1 :width 32
+	vpoke 6914,0 :vpoke 6918,1 :vpoke 6922,2 :vpoke 6926,3 :vpoke 6930,2 'Assign sprites
+
+	locate10,11:print "INITIALIZING"
+
+	open gn$+".bin" as #1 len=1
+	field #1,1 as f$
+	get#1,3 :a$=f$ :get#1,2 :b$=f$ :gs=(asc(a$)*256+asc(b$))-65536!
+	get#1,5 :a$=f$ :get#1,4 :b$=f$ :ge=(asc(a$)*256+asc(b$))-65536!
+	gl=ge-gs
+	si=&h1 :ms=8 :mr=800 :hs=1
+	ps=si :sx=16 :sy=23 :ss=8
+	cx=0 :cy=0 :te=0
+
+	gosub {set_color}
+
+	for f=0    to 7    :read a :vpoke 1856+f,a  :next
+	for f=0    to 7    :read a :vpoke 1864+f,a  :next
+	for f=0    to 7    :read a :vpoke 1872+f,a  :next
+	for f=8    to 31   :read a :vpoke f,a       :next
+	for f=1824 to 1831 :read a :vpoke f,a       :next
+	for f=128  to 135  :read a :vpoke f,a       :next
+	for f=248  to 255  :read a :vpoke f,a       :next 
+	for f=0    to 31   :read a :vpoke 14336+f,a :next
+
+	{search_screen}
+		cls
+		locate 0,0:print"        CHANGE GRAPH KIT        "
+		locate 1,2:print"XWWWWWWWWWWY"
+		locate 1,3:print"VÄäîû®≤º∆–⁄V"
+		locate 1,4:print"VÅãïü©≥Ω«—€V"
+		locate 1,5:print"VÇåñ†™¥æ»“‹V"
+		locate 1,6:print"VÉçó°´µø…”›V"
+		locate 1,7:print"VÑéò¢¨∂¿ ‘ﬁV"
+		locate 1,8:print"VÖèô£≠∑¡À’ﬂV"
+		locate 1,9:print"VÜêö§Æ∏¬Ã÷‡V"
+		locate 1,10:print"Váëõ•Øπ√Õ◊·V"
+		locate 1,11:print"Vàíú¶∞∫ƒŒÿ‚V"
+		locate 1,12:print"Vâìùß±ª≈œŸ„V"
+		locate 1,13:print"ZWWWWWWWWWW["
+		locate 3,15:print"Srt# End#"
+		locate 1,17:print"C"
+		locate 3,17:print STRING$(4-LEN(HEX$(PS)),"0")+HEX$(PS)
+		locate 8,17:print STRING$(4-LEN(HEX$(PS+7)),"0")+HEX$(PS+7)
+		locate 1,19:print"R"
+		locate 3,19:print STRING$(4-LEN(HEX$(SI)),"0")+HEX$(SI)
+		locate 8,19:print STRING$(4-LEN(HEX$(SI+799)),"0")+HEX$(SI+799)
+		locate 1,21:print"G"
+		locate 3,21:print STRING$(4-LEN(HEX$(1)),"0")+HEX$(1)
+		locate 8,21:print STRING$(4-LEN(HEX$(GL)),"0")+HEX$(GL)
+		locate 13,2:print"XWWWWWWWRWWWWWWWWY"
+		' Cm = Cursor Movement   Rm = Region Movement
+		locate 13,3:print"VCm #  "+RIGHT$(STR$(MS),1)+"VEditing V"
+		locate 13,4:print"VRm #"+RIGHT$(hex$(MR),3)+"V"+GN$+STRING$(8-LEN(GN$)," ")+"V"
+		locate 13,5:print"ZWWWWWWWQWWWWWWWW["
+
+		{keys_page_start}
+			on kp goto {keys_page_2}
+			locate 13,7:print"VÍVMove VPVSave   "
+			locate 13,9:print"VÈVStep VDVSize   "
+			locate 13,11:print"VËVEdit VRVRefresh"
+			locate 13,13:print"VFVFreeze/Unfreeze"
+			locate 13,15:print"VEVExplode/Ovrview"
+			locate 13,17:print"                  "
+		goto {keys_page_end}
+
+		{keys_page_2}
+			locate 13,7:print"VNVNew            "
+			locate 13,9:print"VQVPrev VWVNext   "
+			locate 13,11:print"VAVP 4x VSVN 4x   "
+			locate 13,13:print"VZVSrtVXVMidVCVEnd"
+			locate 13,15:print"V1-8VChange Colors"
+			locate 13,17:print"                  "
+
+		{keys_page_end}
+		locate 13,19:print"      VVVMore Keys" ' VHVHelp 
+		locate 13,21:print"ABBBBBBBBBBBBBBBBC"
+		gosub {end_scan}:rem if hs=1 then locate 2,2:print"WWFREEZEWW"
+		if ov = 1 then locate 2,13:print"WOverviewW"
+
+		ay=sy+(ss-2) :ax=0
+		if sy+(ss-2) > 101 then ax=8 :ay=23+(sy+(ss-2))-103
+		if sx+ax > 95 then ay=200
+		vpoke 6912,sy-1  :vpoke 6913,sx
+		vpoke 6916,ay+1  :vpoke 6917,ax+sx
+		vpoke 6920,167 :vpoke 6921,142*si/gl+105
+		vpoke 6928,167 :vpoke 6929,(142*si/gl)+105+(100800!/gl)
+
+		if go = 1 then go = 0 :gosub {update_memory_position}
+
+		{read_keyboard_main}
+			a$ = inkey$
+			## Busca teclas
+
+			if a$ = "1" then c1=c1-1 :gosub {set_color}
+			if a$ = "2" then c1=c1+1 :gosub {set_color}
+			if a$ = "3" then c2=c2-1 :gosub {set_color}
+			if a$ = "4" then c2=c2+1 :gosub {set_color}
+			if a$ = "5" then c3=c3-1 :gosub {set_color}
+			if a$ = "6" then c3=c3+1 :gosub {set_color}
+			if a$ = "7" then c4=c4-1 :gosub {set_color}
+			if a$ = "8" then c4=c4+1 :gosub {set_color}
+
+			if a$ = chr$(&h1c) and sx+8 < 95 then sx=sx+8 :ps=ps+80	   :gosub {move_scan_sprite}
+			if a$ = chr$(&h1d) and sx-8 > 15 then sx=sx-8 :ps=ps-80	   :gosub {move_scan_sprite}
+			if a$ = chr$(&h1e) and sy-ms > 22 then sy=sy-ms :ps=ps-ms  :gosub {move_scan_sprite}
+			if a$ = chr$(&h1f) and sy+ms < 103 then sy=sy+ms :ps=ps+ms :gosub {move_scan_sprite}
+
+			if a$ = "P" then _
+				screen 0 :width 40:
+				close:
+				print gn$+" closed":
+				print :print :print:
+				print "ENTER to open another file ";:
+				line input a$:
+				run
+			endif
+
+			if a$ = " " then gosub {change_movement_step}
+			if a$ = "D" then gosub {change_sprite_size}
+
+			if a$ = chr$(13) then goto {edit_screen}
+
+			if a$ = "E"  then goto {explode_screen}
+			if a$ = "R" then dp = 0 :gosub {scan}
+
+			if a$ = "F" then _
+				dp = 0:
+				hs = abs(hs-1):
+				if hs = 1 then _
+					gosub {end_scan}:
+				else:
+					gosub {scan}
+				endif
+			endif
+
+			if a$ = "Q" then dp=ps-si :si=si-mr 	 :gosub {update_memory_position}
+			if a$ = "W" then dp=ps-si :si=si+mr 	 :gosub {update_memory_position}
+			if a$ = "A" then dp=ps-si :si=si-mr*4 	 :gosub {update_memory_position}
+			if a$ = "S" then dp=ps-si :si=si+mr*4 	 :gosub {update_memory_position}
+			if a$ = "Z" then dp=ps-si :si=&h1 		 :gosub {update_memory_position}
+			if a$ = "X" then dp=ps-si :si=(gl/2)-400 :gosub {update_memory_position}
+			if a$ = "C" then dp=ps-si :si=gl-800 	 :gosub {update_memory_position}
+
+			if a$ = "N" then run
+
+			if a$ = "V" then kp = abs(kp-1): goto {keys_page_start}
+
+		goto {read_keyboard_main}
+
+{set_color}
+	c1 = fn co(c1)
+	c2 = fn co(c2)
+	c3 = fn co(c3)
+	c4 = fn co(c4)
+
+	color c2,c1,c1
+	vpoke 8194,c4*16+c1 :vpoke 8195,c4*16+c1 'Borders character color, blocks of 8 chars
+	vpoke 8192,c4*16+c3 ' Region character colors, blocks of 8 chars
+	vpoke 6915,c2 :vpoke 6919,c2 :vpoke 6923,c2 :vpoke 6927,c2 :vpoke 6931,c2 'Sprite color
+	for f=8208 to 8220 :vpoke f,c3*16+c1 :next 'Scan area character colors, blocks of 8 chars
+return
+
+{move_scan_sprite}
+	ay=sy+(ss-2) :ax=0
+	if sy+(ss-2) > 101 then ax=8 :ay=23+(sy+(ss-2))-103
+	if sx+ax > 95 then ay=200
+
+	vpoke 6912,sy-1 :vpoke 6913,sx
+	vpoke 6916,ay+1 :vpoke 6917,sx+ax
+
+	locate3,17:print string$(4-len(hex$(ps)),"0")+hex$(ps)
+	locate8,17:print string$(4-len(hex$(ps+(ss-1))),"0")+hex$(ps+(ss-1))
+return
+return
+
+{change_sprite_size}
+	if ss = 8 then ss=32 else ss=8
+	
+	ay=sy+(ss-2) :ax=0
+	if sy+(ss-2) > 101 then ax=8 :ay=23+(sy+(ss-2))-103
+	if sx+ax > 95 then ay=200
+
+	vpoke 6916,ay+1 :vpoke 6917,sx+ax
+
+	locate3,17:print string$(4-len(hex$(ps)),"0")+hex$(ps)
+	locate8,17:print string$(4-len(hex$(ps+(ss-1))),"0")+hex$(ps+(ss-1)) ## usar PRINT USING
+return
+
+{update_memory_position}
+	if si < &h1 then si=&h1
+	if si+800 > gl then si=gl-800
+	ps=si+dp
+
+	vpoke 6920,167 :vpoke 6921,142*si/gl+105
+	vpoke 6928,167 :vpoke 6929,(142*si/gl)+105+(100800!/gl)
+
+	locate3,17:print string$(4-len(hex$(ps)),"0")+hex$(ps)
+	locate8,17:print string$(4-len(hex$(ps+7)),"0")+hex$(ps+7)
+	locate3,19:print string$(4-len(hex$(si)),"0")+hex$(si)
+	locate8,19:print string$(4-len(hex$(si+799)),"0")+hex$(si+799)
+
+	'for f = si to si+799:vpoke 1024-si+f,peek(f) :next
+
+	if hs=0 then {scan}
+return
+
+{scan}
+	ov = 0
+	locate2,2:print "WWWSCANWWW"
+	locate2,13:print "WVÈVStopWW"
+	for f=si to si+799:
+		vpoke 1024-si+f,0:
+		get #1,f:
+		a$=f$:
+		vpoke 1024-si+f,asc(a$):
+		if inkey$=" " then {end_scan} else _
+	next
+
+	{end_scan}
+	if hs = 1 then _
+		locate2,2:print "WWFREEZEWW" _
+	else _
+		locate2,2:print "WWWWWWWWWW"
+	endif
+	locate2,13:print "WWWWWWWWWW"
+return
+
+{change_movement_step}
+	if ms=8 then ms=1 else ms=8
+	if mr=800 then mr=400 else mr=800
+
+	locate20,3:print right$(hex$(ms),1)
+	:locate18,4:print right$(hex$(mr),3)
+return
+
+{edit_screen}
+	cls
+	vpoke 6920,200 :vpoke 6928,200
+
+	LOCATE0,0:PRINT "        CHANGE GRAPH KIT        "
+	LOCATE1,2:PRINT"XWWWWWWWWWWY"
+	LOCATE1,3:PRINT"VÄäîû®≤º∆–⁄V"
+	LOCATE1,4:PRINT"VÅãïü©≥Ω«—€V"
+	LOCATE1,5:PRINT"VÇåñ†™¥æ»“‹V"
+	LOCATE1,6:PRINT"VÉçó°´µø…”›V"
+	LOCATE1,7:PRINT"VÑéò¢¨∂¿ ‘ﬁV"
+	LOCATE1,8:PRINT"VÖèô£≠∑¡À’ﬂV"
+	LOCATE1,9:PRINT"VÜêö§Æ∏¬Ã÷‡V"
+	LOCATE1,10:PRINT"Váëõ•Øπ√Õ◊·V"
+	LOCATE1,11:PRINT"Vàíú¶∞∫ƒŒÿ‚V"
+	LOCATE1,12:PRINT"Vâìùß±ª≈œŸ„V"
+	LOCATE1,13:PRINT"ZWWWWWWWWWW["
+	locate3,15:print "Srt# End#"
+	locate1,17:print "S"
+	locate3,17:print string$(4-len(hex$(ps)),"0")+hex$(ps)
+	locate8,17:print string$(4-len(hex$(ps+7)),"0")+hex$(ps+7)
+	locate1,19:print "R"
+	locate3,19:print string$(4-len(hex$(si)),"0")+hex$(si)
+	locate8,19:print string$(4-len(hex$(si+799)),"0")+hex$(si+799)
+	locate1,21:print "G"
+	locate3,21:print string$(4-len(hex$(1)),"0")+hex$(1)
+	locate8,21:print string$(4-len(hex$(gl)),"0")+hex$(gl)
+	locate14,2:print "________________"
+	locate14,3:print "________________"
+	locate14,4:print "________________"
+	locate14,5:print "________________"
+	locate14,6:print "________________"
+	locate14,7:print "________________"
+	locate14,8:print "________________"
+	locate14,9:print "________________"
+	locate14,10:print "________________"
+	locate14,11:print "________________"
+	locate14,12:print "________________"
+	locate14,13:print "________________"
+	locate14,14:print "________________"
+	locate14,15:print "________________"
+	locate14,16:print "________________"
+	locate14,17:print "________________"
+	LOCATE13,19:PRINT"VEVErzVRVRldVTVInv"
+	LOCATE13,21:PRINT"VÈVTglVPVSavVËVBck"
+
+	cx = 0 :cy = 0 :te = 0
+	vpoke 6924,15 :vpoke 6925,112
+
+	{fill_edit_area}
+		c=-1 :ox=0 :oy=0
+		if ss=8 then cl=7 else cl=15
+		fp = ps+(ss-1)
+		if fp > gl-1 then fp = gl-1 ' if final position address bigger then game ending, trim
+		for i=ps to fp
+			c=c+1
+			if te=0 then get #1,i:
+				a$=f$:
+				p$=bin$(asc(a$)):
+				a=len(p$):
+				z=8-a:
+				c$=string$(z,"0"):
+				b$=c$+p$:
+				vpoke 1024-si+i,asc(a$)
+			endif
+			if c>15 then ox=8 :oy=-16
+			for f=1 to 8
+				if te=0 then _
+						if mid$(b$,f,1)="0" then g=16 else g=228
+				if te=1 then _
+						if vpeek((ox+13+f)+(oy+2+c)*32+6144)=16 then g=228 else g=16
+				if te=2 then g=16
+				vpoke(ox+13+f)+(oy+2+c)*32+6144,g
+			next
+		next
+
+		{read_keyboard_edit}
+			a$ = inkey$
+
+			if a$ = chr$(&h1c) and cx < cl then cx = cx+1 :gosub {move_cursor}
+			if a$ = chr$(&h1d) and cx > 0  then cx = cx-1 :gosub {move_cursor}
+			if a$ = chr$(&h1e) and cy > 0  then cy = cy-1 :gosub {move_cursor}
+			if a$ = chr$(&h1f) and cy < cl then cy = cy+1 :gosub {move_cursor}
+
+			if a$ = "E" then te = 2 :goto {fill_edit_area}
+			if a$ = "R" then te = 0 :goto {fill_edit_area}
+			if a$ = "T" then te = 1 :goto {fill_edit_area}
+			if a$ = " " then 		gosub {change_bit}
+			if a$ = "P" then 		gosub {save_drawing}
+
+			if a$ = chr$(13) then vpoke 6924,200 :goto {search_screen}
+
+		goto {read_keyboard_edit}
+
+{move_cursor}
+	vpoke 6924,15+(cy*8) :vpoke 6925,112+(cx*8)
+return
+
+{change_bit}
+	g = vpeek((cx+14)+(cy+2)*32+6144)
+
+	if g = 16 then _
+		g = 228 _
+	else if g = 228 then _
+		g = 16
+	endif
+
+	vpoke(cx+14)+(cy+2)*32+6144,g
+return
+
+{save_drawing}
+	c=-1 :ox=0 :oy=0
+	fp = ps+(ss-1)
+	if fp > gl-1 then fp = gl-1 ' if Final Position address bigger then game ending, trim
+	for i=ps to fp
+		c=c+1
+		'get #1,i :a$ = f$ :p$ = bin$(asc(a$)):
+		a = len(p$):z = 8-a :c$ = string$(z,"0") :b$ = c$+p$
+		if c>15 then ox=8 :oy=-16
+		b$="" :m=128 :n=0
+		for f=1 to 8
+			if vpeek ((ox+13+f)+(oy+2+c)*32+6144)=16 _
+			  then g$ = "0" else g$ = "1"
+			b$=b$+g$
+			n=val(g$)*m+n :m=m/2
+		next
+		a$=chr$(n)
+		lset f$=a$ :put #1,i
+		vpoke 1024-si+i,n
+	next
+return
+
+{explode_screen}
+	cls
+	locate0,0:print "        CHANGE GRAPH KIT        "
+	locate1,2:print "XWWWWWWWWWWWWWWWWWWWY"
+	locate1,3:print "VÄ ä î û ® ≤ º ∆ – ⁄V"
+	locate1,4:print "V                   V"
+	locate1,5:print "VÅ ã ï ü © ≥ Ω « — €V"
+	locate1,6:print "V                   V"
+	locate1,7:print "VÇ å ñ † ™ ¥ æ » “ ‹V"
+	locate1,8:print "V                   V"
+	locate1,9:print "VÉ ç ó ° ´ µ ø … ” ›V"
+	locate1,10:print "V                   V"
+	locate1,11:print "VÑ é ò ¢ ¨ ∂ ¿   ‘ ﬁV"
+	locate1,12:print "V                   V"
+	locate1,13:print "VÖ è ô £ ≠ ∑ ¡ À ’ ﬂV"
+	locate1,14:print "V                   V"
+	locate1,15:print "VÜ ê ö § Æ ∏ ¬ Ã ÷ ‡V"
+	locate1,16:print "V                   V"
+	locate1,17:print "Vá ë õ • Ø π √ Õ ◊ ·V"
+	locate1,18:print "V                   V"
+	locate1,19:print "Và í ú ¶ ∞ ∫ ƒ Œ ÿ ‚V"
+	locate1,20:print "V                   V"
+	locate1,21:print "Vâ ì ù ß ± ª ≈ œ Ÿ „V"
+	locate1,22:print "ZWWWWWWWWWWWWWWWWWWW["
+	locate23,03:print "VOV Ovrw"
+	locate23,21:print "VEV Back"
+	vpoke 6912,200:vpoke 6916,200
+	vpoke 6920,200:vpoke 6928,200
+
+	if ov = 1 then gosub {end_overview}
+
+	{move_ovrw_sprite}
+		if ov = 0 then {explode_keys}
+		vpoke 6912,(oy+1)*16+6  :vpoke 6913,(ox+1)*16 
+		vpoke 6916,(oy+1)*16+14 :vpoke 6917,(ox+1)*16
+		si=(oy*st)+(ox*(st*10))
+		locate27,13:print string$(4-len(hex$(si)),"0")+hex$(si)
+		locate27,15:print string$(4-len(hex$(si+799)),"0")+hex$(si+799)
+
+	{explode_keys}
+		a$=inkey$
+		if a$ = "O" then gosub {overview}
+
+		if a$ = chr$(&h1c) and ox < 9 then ox=ox+1 :gosub {move_ovrw_sprite}
+		if a$ = chr$(&h1d) and ox > 0 then ox=ox-1 :gosub {move_ovrw_sprite}
+		if a$ = chr$(&h1f) and oy < 9 then oy=oy+1 :gosub {move_ovrw_sprite}
+		if a$ = chr$(&h1e) and oy > 0 then oy=oy-1 :gosub {move_ovrw_sprite}
+
+		if a$ = chr$(13) and ov = 1 then si=(oy*st)+(ox*(st*10)):
+			go = 1:
+			if si + 799 > gl then _
+				si = gl - 799:
+				goto {search_screen}:
+			else _
+				goto {search_screen}
+			endif
+		endif
+
+		if a$ = "E" then goto {search_screen}
+
+	goto {explode_keys}
+
+	{overview}
+		a = 0
+		ov = 1
+		st = (gl/100):' slice game in 100 parts (to display first 8 bytes from each)
+		ol = (9*st)+(9*(st*10)) + 8 ' las overviwe block address
+
+		locate2,2:print "WWWWWWWSCANWWWWWWWW"
+		locate2,22:print "WWWWWVÈVStopWWWWWWW"
+
+		for f=1 to ol step st
+			for g = f to f+7
+				vpoke 1024+a,0
+				get #1,g
+				a$=f$
+				vpoke 1024+a,asc(a$)
+				if inkey$=" " then {end_overview}
+				a = a + 1
+			next
+		next
+
+		{end_overview}
+			vpoke 6912,(oy+1)*16+6  :vpoke 6913,(ox+1)*16 
+			vpoke 6916,(oy+1)*16+14 :vpoke 6917,(ox+1)*16
+
+			locate23,05:print "VÍV Move"
+			locate23,07:print "VËV Go"
+			locate23,11:print "Region"
+
+			si=(oy*st)+(ox*(st*10))
+			locate23,13:print "St# " + string$(4-len(hex$(si)),"0")+hex$(si)
+			locate23,15:print "Ed# " + string$(4-len(hex$(si+799)),"0")+hex$(si+799)
+
+			locate2,2:print "WWWWWWWWWWWWWWWWWWW"
+			locate2,22:print "WWWWWWWWWWWWWWWWWWW"
+		return
+end
+ 
+{character_shapes}
+	data 4,4,36,100,252,96,32,0
+	data 0,0,219,154,82,211,0,0
+	data 231,195,165,24,24,165,195,231
+	data 255,128,128,128,128,128,128,255
+	data 255,0,0,0,0,0,0,255
+	data 255,1,1,1,1,1,1,255
+	data 0,126,126,126,126,126,126,0
+	data 255,129,129,129,129,129,129,255
+	data 255,255,255,255,255,255,255,255:rem teste
+
+{sprite_shapes}
+	data 255,129,0,0,0,0,0,0
+	data 129,255,0,0,0,0,0,0
+	data 0,128,128,128,128,128,128,0
+	data 255,129,129,129,129,129,129,255
+
+{functions_not_used}
+{cria_bloco_de_caracteres}
+	c=127
+	for x=2 to 11
+		for y=3 to 12
+			c=c+1
+			:locatex,y:print chr$(c)
+		next
+	next
+end
+
+{mapa_de_caracteres}
+	for i=0 to 255
+		x=i mod 32: y=i\32
+		c=i
+		if c<32 or c=127 then c=32
+		locatex,y:print chr$(c)
+		locatex,y+10:print chr$(1)+chr$(c)
+	next
+end
