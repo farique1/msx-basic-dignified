@@ -6,6 +6,7 @@
 - Change the grouping and order of conversions.  
 - Elevated some warnings to errors and made them stop the conversion.  
 - Labels will cause an error if not only alphanumeric and _ . They also cannot be only numbers.  
+- As invalid labels will stop the conversion, the whole {{}} thing was removed.
 - Multiple defines can be created on a line, separated by commas.  
 - `[?@]x,y` MUST now be followed by an empty space.   
 - `endif`s not alone on a line and not part of a `label`, `rem`, `data` or `quote` will generate a warning (but will not be removed).  
