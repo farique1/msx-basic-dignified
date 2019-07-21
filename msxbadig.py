@@ -321,7 +321,7 @@ else:
 show_log('', '', 1, bullet=0)
 
 
-show_log('', 'Removing ## lines', 1)
+show_log('', 'Removing ## and lone number lines', 1)
 show_log('', 'Deleting or REMarking blank lines', 1, bullet=0)
 show_log('', 'Storing and deleting define lines', 1, bullet=0)
 show_log('', 'Storing and deleting declare lines', 1, bullet=0)
@@ -333,6 +333,9 @@ for line in array:
     line_num, line_alt = line
 
     if re.match(r'(^\s*##.*$)', line_alt, re.IGNORECASE):
+        pass
+
+    if re.match(r'(^\s*\d+\s*$)', line_alt, re.IGNORECASE):
         pass
 
     elif re.match(r'(^\s*$)', line_alt):
@@ -425,14 +428,14 @@ for line in array:
         if join_line_num:
             arrayB.append((join_line_num - 1, previous_line))
             endif_line = join_line_num - 1
-            show_log('', ' '.join([str(join_line_num - 1), 'Joined_line']), 3)
+            show_log(join_line_num - 1, ' '.join(['Joined_line']), 3)
         else:
             arrayB.append((prev_line_number, previous_line))
             endif_line = prev_line_number
 
         clean_line = get_clean_line(previous_line)
         if 'endif' in clean_line.lower():
-            show_log('', ' '.join([str(endif_line), 'endif_not_alone']), 2, bullet=4)
+            show_log(endif_line, ' '.join(['endif_not_alone']), 2, bullet=4)
 
         previous_line = line_alt.rstrip()
         prev_line_number = line_num

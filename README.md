@@ -25,7 +25,7 @@ I felt the need for something like this when I was redoing [**Change Graph Kit**
   
 Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**. They were both great sources of 'inspiration' but I wanted something even closer to the workflow I have been working on with other languages.  
   
-> There is a [*Syntax Highlight*, a *Theme*, a *Comment Setting* and a *Build System*](https://github.com/farique1/MSX-Sublime-Syntax) available for **Sublime Text 3** working with the **MBD** rules to help improve the overall experience.  
+> There is a [*Syntax Highlight*, a *Theme*, a *Comment Setting* and a *Build System*](https://github.com/farique1/MSX-Sublime-Tools) available for **Sublime Text 3** working with the **MBD** rules to help improve the overall experience.  
 There is also a specific syntax highlight for the Classic MSX Basic and a system to run the classic Basic straight from Sublime 3.  
   
 ![# Versions.png](https://github.com/farique1/msx-basic-dignified/blob/master/Images/Versions.png)  
