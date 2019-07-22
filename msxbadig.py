@@ -335,8 +335,8 @@ for line in array:
     if re.match(r'(^\s*##.*$)', line_alt, re.IGNORECASE):
         pass
 
-    if re.match(r'(^\s*\d+\s*$)', line_alt, re.IGNORECASE):
-        pass
+    # if re.match(r'(^\s*\d+\s*$)', line_alt, re.IGNORECASE):
+    #     pass
 
     elif re.match(r'(^\s*$)', line_alt):
         if keep_blank_lines:
