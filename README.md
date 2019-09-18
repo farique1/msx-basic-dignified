@@ -1,9 +1,10 @@
+
   
 ![# MSX Basic Dignified](https://github.com/farique1/msx-basic-dignified/blob/master/Images/msxbadig-logo.png)  
 # MSX Basic Dignified  
   
-## **`v1.1`**  
- >According to the Semantic Versioning it was supposed to be v2 (slightly incompatible with the previous version) but I'm not ready yet. Go see the [changelog](https://github.com/farique1/msx-basic-dignified/blob/master/changelog.md).
+## **`v1.2`**  
+ >Yet again, according to the Semantic Versioning it was supposed to be v2 (somewhat incompatible with the previous version) but I'm not ready yet. Go see the [changelog](https://github.com/farique1/msx-basic-dignified/blob/master/changelog.md).
   
 **Or: My First Python Project.**  
 Or: How to learn a new language?  
@@ -36,7 +37,9 @@ There is also a specific syntax highlight for the Classic MSX Basic and a system
 ### Standard behaviour  
   
 Run with `msxbadig.py [source] [destination] args...`  
-`msxbadig.py` reads a text file containing the modern source code and write back a text file with the Classic MSX Basic code. If no `[destination]` name is given, the file will be saved as `[source].bas`.  
+`msxbadig.py` reads a text file containing the modern source code and write back a text file with the Classic MSX Basic code. If no `[destination]` name is given, the file will be saved as `[source].asc`.  
+> **MBD** is close to supporting conversion to tokenized basic using **MSX Basic Tokenizer** ([try it here](https://github.com/farique1/MSX-Basic-Tokenizer)) so the ASCII output has been renamed to `.asc`.
+ 
 **MBD** displays a log with the steps taken (configurable) and will show warnings and errors, stopping execution, when needed.  
   
 >Special characters do not translate nicely between MSX Basic ASCII and UTF. The best match so far is the  `Western (Windows 1252)` encoding; it will not translate the characters but will preserve the ones typed on the MSX.  
@@ -45,7 +48,7 @@ Run with `msxbadig.py [source] [destination] args...`
   
 >From now on, when showing code, usually the first excerpt is the source, followed by the program call and the converted output.  
   
-- The MSX Basic Dignified 'source code' can be written **without line numbers**, **indented** using TAB or spaces and have **long name** variables.  
+- The MSX Basic Dignified 'source code' can be written **without line numbers**, **indented** using TAB or spaces, have **long name** variables, defining **macros**, **including** external code and using **true** and **false** statements.  
 Different from the Classic MSX Basic, instructions, functions and variables must be separated by spaces from alphanumeric characters. The MSX Syntax Highlight will reflect this and there are several settings to conform the spacing when the conversion is made.  
 The Dignified source code should have a `.bad` extension to avoid conflict with the classic code and to better integrate with the supported Sublime tools.  
 *More on these later.*  
@@ -69,7 +72,7 @@ return
 - Directing the code flow is done with **labels**.  
 Labels are created using curly brackets`{like_this}` and can be used alone on a line to receive the code flow or on a branching (jump) instruction to direct the flow to the corresponding line label. They can only have letters, numbers and underscore and they cannot be only numbers. `{@}` points to its own line (abraço, Giovanni!).  
 Labels marking a section are called line labels and labels on jump instructions  (`GOTO`, `GOSUB`, etc) are called branching labels.  
-Labels not following the naming convention or branching to inexistent line labels will generate an error and stop the conversion. Labels with illegal characters are higlighted when using the MSX Syntax Highlight.  
+Labels not following the naming convention, duplicated line labels or branching to inexistent line labels will generate an error and stop the conversion. Labels with illegal characters are higlighted when using the MSX Syntax Highlight.  
 *More on labels later.*  
 ```BlitzBasic  
 {hello_loop}  
@@ -82,55 +85,64 @@ if inkey$ = "" then goto {@} else goto {hello_loop}
 20 PRINT "hello world"  
 30 IF INKEY$="" THEN GOTO 30 ELSE GOTO 10  
 ```  
-  
-- **Defines** are used to create aliases on the code that are replaced when the conversion is made. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many as needed and there can be several on the same line, separated by commas: `define [name1] [content1], [name2] [content2], [name3] [content3]`.  
-`[?@]x,y ` is a built in **Define** that becomes `LOCATEx,y:PRINT`, it must be followed by an empty space.  
+**Defines** are used to create aliases on the code that are replaced when the conversion is made. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many as needed and there can be several on the same line, separated by commas: `define [name1] [content1], [name2] [content2], [name3] [content3]`.  
+Duplicated **defines** will give an error and stop the conversion.
+A `[]` inside a **define** content will be substituted for an argument touching the closing bracket. If the variable bracket is not empty the text inside will be used as default in case no argument is found.  
+For instance, using `DEFINE [var] [poke 100,[10]]`, a subsequent `[var]30` will be replaced by `poke 100,30`; `[var]` alone will be replaced by `poke 100,10`.  
+  > **Defines** cannot be used as variables for other **defines** (for now).  
+
+`[?@]x,y ` is a built in **define** that becomes `LOCATEx,y:PRINT`, it must be followed by an empty space.  
 ```BlitzBasic  
-define [ifa] [if a$ = ]  
+define [ifa] [if a$ = ], [pause] [a$=inkey$ :if a$<>[" "] goto {@}]  
 [ifa]"2" then print "dois"  
 [ifa]"4" then print "quatro"  
 [?@]10,10 "dez"  
+[pause]chr$(13)
 ```  
 `msxbadig.py test.bad`  
 ```BlitzBasic  
 10 IF A$="2" THEN PRINT "dois"  
 20 IF A$="4" THEN PRINT "quatro"  
 30 LOCATE 10,10:PRINT "dez"  
+40 A$=INKEY$:IF A$<>CHR$(13) GOTO 40
 ```  
   
 - **Long name variables** can be used with **MBD** code.  
-They must have only letters, numbers and underscore and cannot be less than 3 characters or be only numbers. There are for the moment only two types: double precision (default) and strings (followed by an `$`). As is the case with the instructions, they must be separated by empty spaces from other alphanumeric characters or commands (the non alpha characters `~` or `$` on the variables can touch other commands).  
-When converted they are replaced by associated standard two letter variables. They are assigned on a descending order from `ZZ` to `AA` and single letters or numbers are never used. There are two sets of short names assigned, one for the strings, with `$`, and one for the numeric.  
+They can have only letters, numbers and underscore and cannot be less than 3 characters or be only numbers. As is the case with the instructions, they must be separated by empty spaces from other alphanumeric characters or commands (the non alpha characters `~`, `$`, `%`, `!`, `#` on the variables can touch other commands).  
+When converted they are replaced by an associated standard two letter variables. They are assigned on a descending order from `ZZ` to `AA` and single letters or numbers are never used. Each long name is assigned to a short name independent of type, so if `variable1`  becomes `XX` so will `variable1$` become `XX$`
 To use these variables they must be declared, there are two ways to do that:  
   -- On a `declare` line, separated by commas: `declare variable1, variable2, variable3`.  
   -- In place, preceded by an `~`: `~long_var = 3`.  
-When the first long name is used with an `~` or on a `declare` line a new two letter variable is assigned to it, the next time it is used, even with the `~` the previous assignment is maintained.  
-After it is assigned, a long name variable can be used without the `~` but a variable without the `~` that has not been previously assigned will not be converted, will not even generate any erros or warnings.  
+A `declare` instruction declares the long name to all types of variable so explicit type character (`$%!#`) cannot be used.
+When the first long name is used with an `~` or on a `declare` line a new two letter variable is assigned to it, the next time it is used, even with the `~` the previous assignment is maintained. A warning will be given.  
+An explicit assignment between a long and a short name can be forced by using  a `:` when declaring a variable (only on a `declare` command): `declare variable:va` will assign `VA` to `variable`.
+After it is assigned, a long name variable can be used without the `~` but a variable without the `~` that has not been previously assigned will be treated as a loose text and not be converted, will not even generate any erros or warnings.  
+Reserved MSX Basic commands should not be used as variables names.
 Classic one and two letters variables can be used normally alongside long names ones, just be aware that the letters at the end of the alphabet are being used up and they may clash with the hard coded ones.  
 The conversion will try to catch illegal variables when declared but is not always perfect so keep an eye on them.  
 The MSX Syntax Highlight will show illegal variables on `declare` lines or when assigned with `~`.  
 A summary of the long and short name associations can be generated on `REM`s at the end of the converted code.  
   
 ```BlitzBasic  
-declare food$, drink  
+declare food, drink:dk  
 if food$ = "cake" and drink = 3 then _  
-	~result = "belly full":  
-	~sleep$ = "now"  
+	~result$ = "belly full":  
+	~sleep = 10  
 endif  
 ```  
 `msxbadig.py test.bad`  
 ```BlitzBasic  
-10 IF ZZ$="cake" AND ZZ=3 THEN ZY="belly full":ZY$="now"  
+10 IF ZZ$="cake" AND DK=3 THEN ZY$="belly full":ZX=10
 ```  
 Optional:  
 ```BlitzBasic  
-20 ' ZZ$-food$, ZZ-drink, ZY$-sleep$, ZY-result  
+20 ' ZZ-food, ZY-result, ZX-sleep, DK-drink
 ```  
   
 - A single Classic MSX Basic line can be written on several lines on **MBD** using `:` or `_` breaks and **joined** when converting to form a single line.  
 Colons `:` can be used at the end of a line (joining the next one) or the beginning of a line (joining the previous one) and are retained when joined. They are used the same way as the Classic MSX Basic, separating different instructions.  
 Underscores `_` can only be used at the end of a line and they are deleted when the line is joined. They are useful to join broken instructions like `IF THEN ELSE`, long quotes or anything that must form a single command on the converted code.  
-`endif`s can be used (not obligatory) but are for cosmetical or organisational purpose only. They must be alone on their lines and are removed upon conversion without any validation regarding to their `IF`s. If they are not alone and are not part of a `DATA`, `REM` or `QUOTE` they will generate a warning but will not be deleted. `endif`s that are part of any of the previous commands but are alone on a line due to a line break will be deleted.  
+`endif`s can be used (not obligatory, just Python it) but are for cosmetical or organisational purpose only. They must be alone on their lines and are removed upon conversion without any validation regarding to their `IF`s. If they are not alone and are not part of a `DATA`, `REM` or `QUOTE` they will generate a warning but will not be deleted. `endif`s that are part of any of the previous commands but are alone on a line due to a line break will be deleted.  
 Numbers at the start of a line will be removed, generate a warning. Numbers at the beginning of a line after an underscore break `_` will be preserved but numbers at the beginning of a line after a colon `:` break will be removed, even if it is part of a `REM` (there is no need to break a `REM` line with an `:` anyway)  
 All of the warning situations above are highlighted with the MSX Syntax Highlight.  
   
@@ -148,7 +160,7 @@ endif
 10 IF A$="C" THEN FOR F=1 TO 10:LOCATE 1,1:PRINT F:NEXT:LOCATE 1,3:PRINT "done":END  
 ```  
 - The source code can use exclusive **comments** `##` that are stripped during the conversion.  
-Regular `REM`s are kept. A bug prevents the `##` from being removed if there is a `"` after it.  
+Regular `REM`s are kept. A tenacious bug (called Regex Incompetency) prevents the `##` from being removed if there is a `"` after it.  
 ```BlitzBasic  
 ## this will not be converted  
 rem this will  
@@ -160,6 +172,38 @@ rem this will
 20 ' this also will  
 ```  
   
+- An external piece of `.bad` code can be inserted anywhere using the **include** command.  
+`include "code.bad"` will insert the contents of `code.bad` exactly where the `include` was and can even have its lines joined with the main code by using `:` or `_` on any of the files.  
+```BlitzBasic  
+print "This is the main file."
+'
+include "help.bad"
+'
+print "This is the mais file again."
+```
+`msxbadig.py test.bad`
+```BlitzBasic  
+10 PRINT "This is the main file."
+20 '
+30 PRINT "This is a helper code."
+40 PRINT "Saved on another file."
+50 '
+60 PRINT "This is the mais file again."
+```
+
+- **True** and **false** statements can be used with numeric variables, they will be converted to `-1` and `0` respectively and their variables can be treated as true booleans on `if`s and with `not` operators.  
+```BlitzBasic  
+~variable = true
+~condition = false
+if condition then variable = not variable
+```  
+`msxbadig.py test.bad`
+```BlitzBasic  
+10 ZZ=-1
+20 ZY=0
+30 IF ZY THEN ZZ=NOT ZZ
+``` 
+
 ### Configurable arguments  
 Most of **MBD** functionality is configurable through an .ini file or command line arguments  (`ini:` and `arg:` on the examples below) as follow.  
 You can generate the `.ini` file with the `-ini` argument.  
@@ -172,7 +216,7 @@ The modern formatted code file to be read.
 - *Destination file*  
 MSX Basic formatted code file to be saved.  
 `ini: destin_file` `args: <> <destination>`  
-If no name is given, the file will be the first 8 characters from the source with a `.bas` extension.  
+If no name is given, the file will be the first 8 characters from the source with a `.asc` extension.  
   
 **Numbering**  
 - *Starting line number*  
@@ -259,6 +303,7 @@ Add a `:rem` at the end of the line with the name of the labels used on its bran
 ```  
 **Blank lines**  
 Blank lines are stripped from the source by default but they can also be left on the converted code.  
+Blank lines after Dignified commands (define, declare,...) are always removed.
 Extra lines can also be added close to labels for clarity and organization.  
   
 - *Keep blank lines*  

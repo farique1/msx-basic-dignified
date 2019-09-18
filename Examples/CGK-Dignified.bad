@@ -1,0 +1,871 @@
+' CHANGE GRAPH KIT
+' v1.5.1
+' Edit uncompressed graphics on MSX binary files on disk
+' 
+' New
+'   External .com file ML routines, keeping a simplified version on DATA as a fall back
+'     New, exclusive in the .com: rotate, slide(move), flip and improved copy to VRAM 
+'   Better ML DEFINE calls using the new Dignified DEFINEs variables
+'   Streamlined initialization sequence ML routines and error text only load once
+'   New mini preview area with Copy and Paste and the editing area address
+'   Small layout changes with file name now on top line and more space for the step text
+'   Configuration can now be saved and is automatically load at the start. Color only
+'   Option to scan only the area under the cursor
+'   Better region map calculation
+'   Better overview region location report
+'   Game addresses now starts at position 0 not position 1
+'   Cursor cannot go or stay beyond game length anymore
+'   Files now have a minimum limit of 800 bytes to be loaded
+'   Fixed bug (bad coding) leaking memory on the overview display
+'	Converted 0 - 1 variables to the new Dignified TRUE - FALSE
+'   Small code optimizations
+'
+' Copyright (1984 - 2019) - Fred Rique (farique)
+' https://github.com/farique1/Change-Graph-Kit
+'
+## MSX Basic Dignified version
+## Convert to Classic MSX Basic with
+## https://github.com/farique1/msx-basic-dignified 
+## Sublime Syntax highlight available at
+## https://github.com/farique1/MSX-Sublime-Tools
+
+## Sublime Build settings
+## BB:export_path=diskbins/
+## BB:export_file=CGK-Verbose.asc
+## BB:convert_only=True
+## BB:throttle=False
+## BB:arguments=-bc 1, -uo, -ar, -br, -sl, -vs 5
+## BB:override_machine=Philips_NMS_8250
+## BB:override_extension=Microsol_Disk:SlotB
+
+declare colorBase, color1, color2, color3, color4, color5, color6
+declare haltScan, isOverview, goOverview, keysPage, keysEdit
+
+define [disp cursor] [cursorDisplace = cursorPos - regionStart]
+define [pause] [a$=inkey$:ifa$<>[" "]then{@}]
+
+clear 200,&hda00
+defint a-z :maxfiles = 2
+on stop gosub {stopped} :stop on
+on error goto {error}
+~errorType = 0
+
+~configLoad = true
+color1 = 1 :color2 = 15 :color3 = 2 :color4 = 6 :color5 = 2 :color6 = 1
+gosub {load_config}
+screen 0 :color color2,color1,color1 :width 40 :key off
+
+[?@]14,11 "INITIALIZING"
+
+[?@]14,13 " ERROR MSGS "
+dim ~errorM(36)
+' Using the time format in ROM to determine language
+if (peek(&h2b) and 112) = 32 then restore {portuguese_ROM} else restore {english_ROM}
+for f = 1 to 36: read a :errorM(f) = a :next
+
+[?@]14,13 " ML SUPPORT "
+## Insert ML routines
+## Pass variables with pokes from MLs to MLs+7
+## USR args mem pos change if variable is integer, single, double, etc
+## scan area start=&h0400 length=&h0320
+## mini preview start=&h0040 lenght=&h0020
+## window request length=&h0060 VRAM=&h1940
+~MLs = &hda00
+errorType = 3
+bload "CGKTools.com"
+~mlFallback = false
+restore {character_shapes}
+goto {ml_setup}
+
+{ml_fallback}
+	[?@]8,8 " CGKTools.bin not found"
+	[?@]8,9 "Using internal fall back"
+	restore {ml_routines}
+	for f = 0 to 146 :read a$ :[?@]18,15 147-f:poke MLs+f,val("&h"+a$) :next:[?@]18,15 "   "
+	~mlFallback = true
+
+{ml_setup}
+declare VRAMx, VRAMy, VRAMw, VRAMh
+define [var0][poke MLs+0,[0]], [var1][poke MLs+1,[0]], [var2][poke MLs+2,[0]], [var3][poke MLs+3,[0]]
+define [var4][poke MLs+4,[0]], [var5][poke MLs+5,[0]], [var6][poke MLs+6,[0]], [var7][poke MLs+7,[0]]
+define [invert_VRAM] [a=usr0(0)], [fill_VRAM] [a=usr1([0])], [copy_VRAM] [a=usr2([0])]
+define [populate_edit] [a=usr3(0)], [flip_VRAM] [a=usr4(0)], [rotate_VRAM] [a=usr5(0)], [slide_VRAM][a=usr6([0])]
+defusr0 = MLs+&h08	' invert_VRAM 		v0=len
+defusr1 = MLs+&h0b	' fill_VRAM 		v0-v1=len v2-v3=srt usr(ptrn)
+defusr2 = MLs+&h0e	' copy_VRAM 		v0-v1=VRAM v2=width v3=height usr(direc)
+defusr3 = MLs+&h11	' populate_edit 	v0=col_len v1=lin_len
+defusr4 = MLs+&h14	' flip_VRAM		 	v0=len
+defusr5 = MLs+&h17	' rotate_VRAM	 	v0=len
+defusr6 = MLs+&h1a	' slide_VRAM	 	v0=len usr(direc)
+def fn ~horiz(x,y,s) = (x + s + (y * 32)) mod 256
+def fn ~verti(x,y,s) = int((x + s + (y * 32))/256)
+
+{start}
+screen 0 :width 40
+def fn colorBase(x) = abs(x mod 16 + 16) mod 16
+haltScan = false :isOverview = false :goOverview = false :keysPage = 0
+
+~gameName$ = "" ' leave blank to enable file request
+~gameExtension$ = ".bin" ' leave blank to all
+if gameExtension$ = "" then gameExtension$ = ".*"
+if gameName$ <> "" then goto {inicializacao}
+
+{insert_disk}
+cls
+~errorType = 1
+[?@]14,8 "Insert disk"
+[?@]11,10 "and press any key"
+if not configLoad then _
+	[?@]9,18 "CONFIG FILE NOT FOUND"
+endif
+a$ = inkey$: if a$ = "" goto {@}
+cls
+files "*"+gameExtension$
+print:print
+print ":Load" :print ":ARROWS choose:ENTER select:SPACE type";
+for f = 0 to 24
+	~memPos = 0 + 40 * f
+	if chr$(vpeek(memPos)) = ":" then ~posLoad = f - 1
+next
+
+x = 12: y = 0
+memPos = x + 40 * y
+gosub {show_content}
+
+{keys}
+	a$=inkey$
+	[?@]x,y "<"
+	[?@]x,y " "
+	if a$ = "" then {keys}
+
+	[?@]x,y " "
+	px = x :py = y
+	if a$ = chr$(&h1c) then x = x + 13: gosub {move_cursor_files}
+	if a$ = chr$(&h1d) then x = x - 13: gosub {move_cursor_files}
+	if a$ = chr$(&h1e) then y = y -  1: gosub {move_cursor_files}
+	if a$ = chr$(&h1f) then y = y +  1: gosub {move_cursor_files}
+	if a$ = chr$(&h0d) then gosub {continue}
+	if a$ = " " then goto {type_name}
+	[?@]x,y "<"
+	gosub {show_content}
+goto {keys}
+
+{move_cursor_files}
+	if x >= 39 then x = 12
+	if x <=  0 then x = 38
+	if y <=  0 then y = 0
+	if y >= 24 then y = 24
+	memPos = x + 40 * y
+	if  vpeek(memPos - 12) = 32 then x = px: y = py: memPos = x + 40 * y
+return
+
+{show_content}
+	~count = 0
+	gameName$ = ""
+	~letra$ = ""
+	[?@]6,posLoad "            "
+	for f = memPos - 12 to memPos - 1
+		letra$ = chr$(vpeek(f))
+		gameName$ = gameName$ + letra$
+		[?@]6+count,posLoad letra$
+		count = count + 1
+	next
+return
+
+{type_name}
+	~errorType = 2
+	locate 6,posLoad :? "            "
+	locate 6,posLoad :line input gameName$
+	if gameName$ = "" then gosub {show_content} :goto {keys}
+
+{continue}
+	[?@]39,posLoad+1
+	files gameName$
+
+{inicializacao}
+	declare bytes, lowByte, highByte, gameStart, gameEnd
+
+	cls :screen 1 :width 32
+	[var0]&h20:[var1]&h03:[var2]&h00:[var3]&h04:[fill_VRAM]0 ## clear scan area
+	vpoke 6914,0 :vpoke 6918,1 :vpoke 6922,2 :vpoke 6926,3 :vpoke 6930,2 ## Assign sprites
+
+	[?@]10,11 "INITIALIZING"
+
+	[?@]10,13 "    GAME    "
+	open gameName$ as #1 len = 1
+	field #1,1 as bytes$
+	get #1,3 :lowByte$ = bytes$ :get #1,2 :highByte$ = bytes$
+		:gameStart = (asc(lowByte$) * 256 + asc(highByte$)) - 65535!
+	get #1,5 :lowByte$ = bytes$ :get #1,4 :highByte$ = bytes$
+		:gameEnd = (asc(lowByte$) * 256 + asc(highByte$)) - 65535!
+
+	~gameLength = gameEnd - gameStart - 1
+	~regionStart = 0 :~spriteStep = 8 :~regionStep = 800 :haltScan = true
+	~cursorPos = regionStart :~cursorX = 16 :~cursorY = 23 : ~cursorSize = 32
+
+	if gameLength < 800 then close :goto {game_small}
+
+	[?@]10,13 "   SHAPES   "
+	## redefine characters and sprites
+	[?@]15,15 "06"
+	for f = 0 to 23 :read a :vpoke &h0008 + f,a :next :[?@]15,15 "05" ## faces,hearth to [=] (lower bar)
+	for f = 0 to 7  :read a :vpoke &h0080 + f,a :next :[?@]15,15 "04" ## cross half horizontal to pixel empty
+	for f = 0 to 7  :read a :vpoke &h00F8 + f,a :next :[?@]15,15 "03" ## cross half vertical to filled box
+	for f = 0 to 7  :read a :vpoke &h0720 + f,a :next :[?@]15,15 "02" ## sigma to pixel filled
+	for f = 0 to 23 :read a :vpoke &h0740 + f,a :next :[?@]15,15 "01" ## phi to return, theta to space, omega to arrows
+	for f = 0 to 31 :read a :vpoke &h3800 + f,a :next :[?@]15,15 "00" ## Sprites
+	
+	[var0]&h20:[var1]&h00:[var2]&h60:[var3]&h00:[fill_VRAM] ## Clear copy area
+
+	[?@]10,13 "   COLORS   "
+	gosub {set_color}
+
+	{search_screen}
+		cls
+		[?@]0,0 "  CHANGE GRAPH KIT WW "+left$(gameName$,8)
+		[?@]1,2 "XWWWWWWWWWWY"
+		[?@]1,3 "VÄäîû®≤º∆–⁄V"
+		[?@]1,4 "VÅãïü©≥Ω«—€V"
+		[?@]1,5 "VÇåñ†™¥æ»“‹V"
+		[?@]1,6 "VÉçó°´µø…”›V"
+		[?@]1,7 "VÑéò¢¨∂¿ ‘ﬁV"
+		[?@]1,8 "VÖèô£≠∑¡À’ﬂV"
+		[?@]1,9 "VÜêö§Æ∏¬Ã÷‡V"
+		[?@]1,10 "Váëõ•Øπ√Õ◊·V"
+		[?@]1,11 "Vàíú¶∞∫ƒŒÿ‚V"
+		[?@]1,12 "Vâìùß±ª≈œŸ„V"
+		[?@]1,13 "ZWWWWWWWWWW["
+		[?@]3,15 "Srt# End#"
+		[?@]1,17 "C"
+		[?@]3,17  string$(4-len(hex$(cursorPos)),"0")+hex$(cursorPos)
+		[?@]8,17  string$(4-len(hex$(cursorPos + ( cursorSize - 1))),"0")+hex$(cursorPos + ( cursorSize - 1))
+		[?@]1,19 "R"
+		[?@]3,19  string$(4-len(hex$(regionStart)),"0")+hex$(regionStart)
+		[?@]8,19  string$(4-len(hex$(regionStart + 799)),"0")+hex$(regionStart + 799)
+		[?@]1,21 "G"
+		[?@]3,21  string$(4-len(hex$(0)),"0")+hex$(0)
+		[?@]8,21  string$(4-len(hex$(gameLength)),"0")+hex$(gameLength)
+		[?@]13,2 "XWWWWWWWWWWWWWWWWY"
+		[?@]13,3 "VCursor Stp #   "+right$(str$(spriteStep),1)+"V"
+		[?@]13,4 "VRegion Stp # "+right$(hex$(regionStep),3)+"V"
+		[?@]13,5 "ZWWWWWWWWWWWWWWWW["
+
+		{keys_page_start}
+			on keysPage goto {keys_page_2}
+			[?@]13,7  "VÍVMove VËVEdit   "
+			[?@]13,9  "VÈVStep VDVSize   "
+			[?@]13,11 "VBVClearVRVRefresh"
+			[?@]13,13 "VTVScan und cursor "
+			[?@]13,15 "VFVFreeze/Unfreeze"
+			[?@]13,17 "VEVExplode/Ovrview"
+			[?@]13,19 "                  "
+		goto {keys_page_end}
+
+		{keys_page_2}
+			[?@]13,7  "VNVNew  VPVExit  "
+			[?@]13,9  "VQVPrev VWVNext   "
+			[?@]13,11 "VAVP 4x VSVN 4x   "
+			[?@]13,13 "VZVSrtVXVMidVCVEnd"
+			[?@]13,15 "VK LVCfg Save Load"
+			[?@]13,17 "V1-8VChange Colors"
+			[?@]13,19 "                  "
+
+		{keys_page_end}
+		[?@]13,19 "      VMVMore Keys"
+		[?@]13,21 "ABBBBBBBBBBBBBBBBC"
+		gosub {end_scan}
+		if isOverview = true then [?@]2,13 "WOverviewW"
+
+		~adjustY = cursorY + (cursorSize - 2):
+		~adjustX = 0
+
+		if cursorY + (cursorSize - 2) > 101 then adjustX = 8 :adjustY = 23 + (cursorY + (cursorSize - 2)) - 103
+		if cursorX + adjustX > 95 then adjustY = 200
+		vpoke 6912,cursorY - 1 :vpoke 6913,cursorX
+		vpoke 6916,adjustY + 1 :vpoke 6917,adjustX + cursorX
+		~posIni = regionStart / (gameLength / 141) + 105
+		vpoke 6920,167 :vpoke 6921,posIni
+		vpoke 6928,167 :vpoke 6929,posIni+(141/(gameLength/800))
+
+		if goOverview then goOverview = false :gosub {update_memory_position}
+
+		{read_keyboard_main}
+			a$ = inkey$
+
+			if a$ = chr$(&h1c) and (cursorX + 8 < 95) and (cursorPos + cursorSize-2 + 80 < gameLength) then _
+				cursorX = cursorX + 8 :cursorPos = cursorPos + 80 :gosub {move_scan_sprite}
+
+			if a$ = chr$(&h1d) and (cursorX - 8 > 15) then _
+				cursorX = cursorX - 8 :cursorPos = cursorPos - 80 :gosub {move_scan_sprite}
+
+			if a$ = chr$(&h1e) and (cursorY - spriteStep > 22) then _
+				cursorY = cursorY - spriteStep :cursorPos = cursorPos - spriteStep :gosub {move_scan_sprite}
+
+			if a$ = chr$(&h1f) and (cursorY + spriteStep < 103) and (cursorPos + cursorSize-2 + spriteStep < gameLength) then _
+				cursorY = cursorY + spriteStep :cursorPos = cursorPos + spriteStep :gosub {move_scan_sprite}
+
+			if a$ = "1" then color1 = color1 - 1 :gosub {set_color}
+			if a$ = "2" then color1 = color1 + 1 :gosub {set_color}
+			if a$ = "3" then color2 = color2 - 1 :gosub {set_color}
+			if a$ = "4" then color2 = color2 + 1 :gosub {set_color}
+			if a$ = "5" then color3 = color3 - 1 :gosub {set_color}
+			if a$ = "6" then color3 = color3 + 1 :gosub {set_color}
+			if a$ = "7" then color4 = color4 - 1 :gosub {set_color}
+			if a$ = "8" then color4 = color4 + 1 :gosub {set_color}
+
+			if a$ = chr$(13) then goto {edit_screen}
+			if a$ = "E" then goto {explode_screen}
+			if a$ = "D" then gosub {change_sprite_size}
+			if a$ = " " then gosub {change_movement_step}
+			if a$ = "R" then ~cursorDisplace = 0 :gosub {scan}
+			if a$ = "M" then keysPage = abs(keysPage - 1): goto {keys_page_start}
+			if a$ = "B" then [var0]&h20:[var1]&h03:[var2]&h00:[var3]&h04:[fill_VRAM]
+			if a$ = "N" then gosub {window_requester} :close :restore {character_shapes} :goto {start}
+			if a$ = "P" then gosub {window_requester} :close :clear :screen 0 :width 40 :color 15,5,5 :new
+			if a$ = "K" then gosub {save_config}
+			if a$ = "L" then gosub {load_config} :gosub {set_color}
+			if a$ = "T" then gosub {refresh_cursor_area}
+
+			if a$ = "Q" then [disp cursor] :regionStart = regionStart - regionStep :gosub {update_memory_position}
+			if a$ = "W" then [disp cursor] :regionStart = regionStart + regionStep :gosub {update_memory_position}
+			if a$ = "A" then [disp cursor] :regionStart = regionStart - regionStep * 4 :gosub {update_memory_position}
+			if a$ = "S" then [disp cursor] :regionStart = regionStart + regionStep * 4 :gosub {update_memory_position}
+			if a$ = "Z" then [disp cursor] :regionStart = &h00 :gosub {update_memory_position}
+			if a$ = "X" then [disp cursor] :regionStart = (gameLength / 2) - 400 :gosub {update_memory_position}
+			if a$ = "C" then [disp cursor] :regionStart = gameLength - 799 :gosub {update_memory_position}
+
+			if a$ = "F" then _
+				cursorDisplace = 0:
+				haltScan = not haltScan:
+				if haltScan then _
+					gosub {end_scan}:
+				else:
+					gosub {scan}
+				endif
+			endif
+
+		goto {read_keyboard_main}
+
+{set_color}
+	color1 = fn colorBase(color1)
+	color2 = fn colorBase(color2)
+	color3 = fn colorBase(color3)
+	color4 = fn colorBase(color4)
+	color5 = fn colorBase(color3)
+	color6 = fn colorBase(color1)
+
+	color color2,color1,color1
+	vpoke 8194,color4 * 16 + color1								## Border character colors, blocks of 8 chars
+	vpoke 8195,color4 * 16 + color1								## Border character colors, blocks of 8 chars
+	vpoke 8192,color4 * 16 + color3 							## Lower bar character colors, blocks of 8 chars
+	vpoke 8193,color3 * 16 + color1								## Mini preview colors, blocks of 8 chars
+	vpoke 6915,color2 :vpoke 6919,color2						## Sprite colors
+	vpoke 6923,color2 :vpoke 6927,color2 :vpoke 6931,color2		## Sprite colors
+	for f = 0 to 12 :vpoke 8208+f,color3 * 16 + color1 :next	## Scan area character colors, blocks of 8 chars
+return
+
+{save_config}
+	x = 12 :y = 10 :w = 8 :h = 2
+
+	gosub {vram_conversion}
+
+	[var0]VRAMx:[var1]VRAMy:[var2]VRAMw:[var3]VRAMh:[copy_VRAM]0
+	[?@]12,10 "XWWWWWWY"
+	[?@]12,11 "VSAVINGV"
+	[?@]12,12 "ZWWWWWW[
+
+	open "CGKConf.cfg" for output as #2
+	print #2,color1,color2,color3,color4,color5,color6
+	close #2
+	[var0]VRAMx:[var1]VRAMy:[var2]VRAMw:[var3]VRAMh:[copy_VRAM]1
+return
+
+{load_config}
+	~errorType = 4
+	open "CGKConf.cfg" for input as #2
+	input #2,color1,color2,color3,color4,color5,color6
+	close #2
+	{config_failed}
+return
+
+{refresh_cursor_area}
+	~finalPos = cursorPos + (cursorSize - 1) 'find formula to cap at gameLength to avoid next if
+	if finalPos > gameLength - 1 then finalPos = gameLength - 1
+	for i = cursorPos to finalPos:
+		get #1,i+1:
+		vpoke 1024 - regionStart + i,vpeek(1024 - regionStart + i) xor 255:
+		a$ = bytes$:
+		vpoke 1024 - regionStart + i,asc(a$):
+	next
+return
+
+{move_scan_sprite}
+	adjustY = cursorY + ( cursorSize - 2) :adjustX = 0
+	if cursorY + ( cursorSize - 2) > 101 then adjustX = 8 :adjustY = 23 + (cursorY + ( cursorSize - 2)) - 103
+	if cursorX + adjustX > 95 then adjustY = 200
+
+	vpoke 6912,cursorY - 1 :vpoke 6913,cursorX
+	vpoke 6916,adjustY + 1 :vpoke 6917,cursorX + adjustX
+
+	[?@]3,17 string$(4 - len(hex$(cursorPos)),"0")+hex$(cursorPos)
+	[?@]8,17 string$(4 - len(hex$(cursorPos + ( cursorSize - 1))),"0")+hex$(cursorPos + ( cursorSize - 1))
+return
+
+{change_sprite_size}
+	if cursorSize = 32 then cursorSize = 8 else if cursorPos + cursorSize + 22 < gameLength then cursorSize = 32 else return
+	
+	adjustY = cursorY + (cursorSize - 2) :adjustX = 0
+	if cursorY + (cursorSize - 2) > 101 then adjustX = 8 :adjustY = 23 + (cursorY + (cursorSize - 2)) - 103
+	if cursorX + adjustX > 95 then adjustY = 200
+
+	vpoke 6916,adjustY + 1 :vpoke 6917,cursorX + adjustX
+
+	[?@]3,17 string$(4-len(hex$(cursorPos)),"0")+hex$(cursorPos)
+	[?@]8,17 string$(4-len(hex$(cursorPos + ( cursorSize - 1))),"0")+hex$(cursorPos + ( cursorSize - 1))
+return
+
+{update_memory_position}
+	if regionStart < 0 then regionStart = 0
+	if regionStart + 799 > gameLength then regionStart = gameLength - 799
+	cursorPos = regionStart + cursorDisplace
+
+	~posIni = regionStart / (gameLength / 141) + 105
+	vpoke 6920,167 :vpoke 6921,posIni
+	vpoke 6928,167 :vpoke 6929,posIni+(141/(gameLength/800))
+
+	[?@]3,17 string$(4 - len(hex$(cursorPos)),"0")+hex$(cursorPos)
+	[?@]8,17 string$(4 - len(hex$(cursorPos + 7)),"0")+hex$(cursorPos + 7)
+	[?@]3,19 string$(4 - len(hex$(regionStart)),"0")+hex$(regionStart)
+	[?@]8,19 string$(4 - len(hex$(regionStart + 799)),"0")+hex$(regionStart + 799)
+
+	if cursorPos + cursorSize > gameLength then _
+		cursorY = 103 - cursorSize:
+		cursorX = 95 - 7:
+		cursorPos = gameLength - cursorSize+1:
+		gosub {move_scan_sprite}
+	endif
+
+	if not haltScan then {scan}
+return
+
+{scan}
+	isOverview = false
+	[?@]2,2 "WWWSCANWWW"
+	[?@]2,13 "WVÈVStopWW"
+
+	for f = regionStart to regionStart + 799
+		vpoke 1024 - regionStart + f,vpeek(1024 - regionStart + f) xor 255:
+		get #1,f+1 :a$ = bytes$:
+		vpoke 1024 - regionStart + f,asc(a$):
+		if inkey$=" " then {end_scan} else _
+	next
+
+	{end_scan}
+	if haltScan then _
+		[?@]2,2 "WWFREEZEWW" _
+	else _
+		[?@]2,2 "WWWWWWWWWW"
+	endif
+	[?@]2,13 "WWWWWWWWWW"
+return
+
+{change_movement_step}
+	if spriteStep = 8 then spriteStep = 1 else spriteStep = 8
+	if regionStep = 800 then regionStep = 400 else regionStep = 800
+	[?@]29,3  right$(hex$(spriteStep),1):
+	[?@]27,4  right$(hex$(regionStep),3)
+return
+
+{edit_screen}
+	cls
+	vpoke 6920,200 :vpoke 6928,200
+	[var0]&h20:[var1]&h00:[var2]&h40:[var3]&h00:[fill_VRAM] ## Clear mini preview
+	[?@]0,0  "  CHANGE GRAPH KIT WW "+left$(gameName$,8)
+	[?@]1,2 "XWWWWWWWWWWY"
+	[?@]1,3 "VÄäîû®≤º∆–⁄V"
+	[?@]1,4 "VÅãïü©≥Ω«—€V"
+	[?@]1,5 "VÇåñ†™¥æ»“‹V"
+	[?@]1,6 "VÉçó°´µø…”›V"
+	[?@]1,7 "VÑéò¢¨∂¿ ‘ﬁV"
+	[?@]1,8 "VÖèô£≠∑¡À’ﬂV"
+	[?@]1,9 "VÜêö§Æ∏¬Ã÷‡V"
+	[?@]1,10 "Váëõ•Øπ√Õ◊·V"
+	[?@]1,11 "Vàíú¶∞∫ƒŒÿ‚V"
+	[?@]1,12 "Vâìùß±ª≈œŸ„V"
+	[?@]1,13 "ZWWWWWWWWWW["
+	[?@]1,14 "XWWRWWWWRWWY"
+	[?@]1,15 "VHJV    VLNV"
+	[?@]1,16 "VIKV    VMOV"
+	[?@]1,17 "ZWWQWWWWQWW["
+	[?@]5,15 string$(4-len(hex$(cursorPos)),"0")+hex$(cursorPos)
+	[?@]5,16 string$(4-len(hex$(cursorPos + ( cursorSize - 1))),"0")+hex$(cursorPos + ( cursorSize - 1))
+	[?@]14,2 "________________"
+	[?@]14,3 "________________"
+	[?@]14,4 "________________"
+	[?@]14,5 "________________"
+	[?@]14,6 "________________"
+	[?@]14,7 "________________"
+	[?@]14,8 "________________"
+	[?@]14,9 "________________"
+	[?@]14,10 "________________"
+	[?@]14,11 "________________"
+	[?@]14,12 "________________"
+	[?@]14,13 "________________"
+	[?@]14,14 "________________"
+	[?@]14,15 "________________"
+	[?@]14,16 "________________"
+	[?@]14,17 "________________"
+	vpoke 6924,15 :vpoke 6925,112
+
+	{keys_edit_start}
+		if mlFallback then keysEdit = 0
+		on keysEdit goto {keys_edit_2}
+		[?@]01,19 "VCVCpyVVVPst"
+		[?@]01,21 "VMVKysV#VCor"
+	goto {keys_edit_end}
+
+	{keys_edit_2}
+		[?@]01,19 "VRVRotVTVHmv"
+		[?@]01,21 "VFVFlpVGVVmv"
+
+	{keys_edit_end}
+	[?@]13,19 "VEVErzVÈVTglVLVRld"
+	[?@]13,21 "VDVInvVSVSavVËVBck"
+
+	if editType = -1 then ~editType = 0 :goto {read_keyboard_edit}
+
+	~editX = 0 :~editY = 0 :~editType = 0
+	{fill_edit_area}
+		declare areaSize, finalPos, prevLen, editLin, editCol
+
+		finalPos = cursorPos + (cursorSize - 1) 'find formula to cap at gameLength to avoid next if
+		if finalPos > gameLength - 1 then finalPos = gameLength - 1
+
+		if cursorSize = 8 then _
+			areaSize = 7 :prevLen = 8 :editLin = 8 :editCol = 1:
+		else _
+			areaSize = 15 :prevLen = 32 :editLin = 16 :editCol = 2
+		endif
+
+		if editType = 1 then [var0]prevLen:[invert_VRAM]
+		if editType = 2 then [var0]prevLen:[var1]&h00:[var2]&h40:[var3]&h00:[fill_VRAM]
+		if editType = 3 and not mlFallback then [var0]prevLen:[rotate_VRAM]
+		if editType = 4 and not mlFallback then [var0]prevLen:[flip_VRAM]
+		if editType = 5 and not mlFallback then [var0]prevLen:[slide_VRAM]1
+		if editType = 6 and not mlFallback then [var0]prevLen:[slide_VRAM]0
+
+		if editType = 0 then _
+			for i = cursorPos to finalPos:
+				get #1,i+1:
+				vpoke 1024 - regionStart + i,vpeek(1024 - regionStart + i) xor 255:
+				a$ = bytes$:
+				vpoke &h0040 + i - cursorPos,asc(a$):
+				vpoke 1024 - regionStart + i,asc(a$):
+			next
+		endif
+		[var0]editCol:[var1]editLin:[populate_edit]
+
+		{read_keyboard_edit}
+			a$ = inkey$
+
+			if a$ = chr$(&h1c) and editX < areaSize then editX = editX + 1 :vpoke 6925,112 + (editX * 8)
+			if a$ = chr$(&h1d) and editX > 0 then editX = editX - 1 :vpoke 6925,112 + (editX * 8)
+			if a$ = chr$(&h1e) and editY > 0 then editY = editY - 1 :vpoke 6924,15 + (editY * 8)
+			if a$ = chr$(&h1f) and editY < areaSize then editY = editY + 1 :vpoke 6924,15 + (editY * 8)
+
+			if a$ = "E" then editType = 2 :goto {fill_edit_area}
+			if a$ = "D" then editType = 1 :goto {fill_edit_area}
+			if a$ = "R" then editType = 3 :goto {fill_edit_area}
+			if a$ = "F" then editType = 4 :goto {fill_edit_area}
+			if a$ = "T" then editType = 5 :goto {fill_edit_area}
+			if a$ = "G" then editType = 6 :goto {fill_edit_area}
+
+			if a$ = "C" then for f=0 to prevLen-1 :vpoke &h0060+f,vpeek(&h0040+f) :next
+			if a$ = "V" then for f=0 to prevLen-1 :vpoke &h0040+f,vpeek(&h0060+f) :next
+										:[var0]editCol:[var1]editLin:[populate_edit]
+
+			if a$ = " " then gosub {change_bit}
+			if a$ = "S" then gosub {save_drawing}
+			if a$ = "L" then editType = 0 :goto {fill_edit_area}
+			if a$ = "M" then keysEdit = abs(keysEdit - 1): editType = -1 :goto {keys_edit_start}
+
+			if a$ = "1" then color5 = color5 - 1 :gosub {set_minipreview_color}
+			if a$ = "2" then color5 = color5 + 1 :gosub {set_minipreview_color}
+			if a$ = "3" then color6 = color6 - 1 :gosub {set_minipreview_color}
+			if a$ = "4" then color6 = color6 + 1 :gosub {set_minipreview_color}
+
+			if a$ = chr$(13) then vpoke 6924,200 :goto {search_screen}
+
+		goto {read_keyboard_edit}
+
+{set_minipreview_color}
+	color5 = fn colorBase(color5)
+	color6 = fn colorBase(color6)
+	vpoke 8193,color5 * 16 + color6	
+return
+
+{change_bit}
+	~pixel = vpeek ((editX + 14) + (editY + 2) * 32 + 6144)
+	pixel = (228 + 16) - pixel
+	vpoke (editX + 14) + (editY + 2) * 32 + 6144,pixel
+
+	~posY = editY: if editX > 7 then posY = editY + 16
+	vpoke &h0040 + posY,2^(7-(editX mod 8)) xor vpeek(&h0040 + posY)
+return
+
+{save_drawing}
+	finalPos = cursorPos + (cursorSize - 1) 'find formula to cap at gameLength to avoid next if
+	if finalPos > gameLength - 1 then finalPos = gameLength - 1
+
+	for i = cursorPos to finalPos
+		~scanPos = 1024 - regionStart + i
+		~previewByte = vpeek(&h0040 + i - cursorPos)
+
+		vpoke scanPos,vpeek(scanPos) xor 255
+
+		a$ = chr$(previewByte)
+		lset bytes$ = a$ :put #1,i
+
+		vpoke scanPos,previewByte
+	next
+return
+
+{explode_screen}
+	cls
+	[?@]0,0 "  CHANGE GRAPH KIT WW "+left$(gameName$,8)
+	[?@]1,2 "XWWWWWWWWWWWWWWWWWWWY"
+	[?@]1,3 "VÄ ä î û ® ≤ º ∆ – ⁄V"
+	[?@]1,4 "V                   V"
+	[?@]1,5 "VÅ ã ï ü © ≥ Ω « — €V"
+	[?@]1,6 "V                   V"
+	[?@]1,7 "VÇ å ñ † ™ ¥ æ » “ ‹V"
+	[?@]1,8 "V                   V"
+	[?@]1,9 "VÉ ç ó ° ´ µ ø … ” ›V"
+	[?@]1,10 "V                   V"
+	[?@]1,11 "VÑ é ò ¢ ¨ ∂ ¿   ‘ ﬁV"
+	[?@]1,12 "V                   V"
+	[?@]1,13 "VÖ è ô £ ≠ ∑ ¡ À ’ ﬂV"
+	[?@]1,14 "V                   V"
+	[?@]1,15 "VÜ ê ö § Æ ∏ ¬ Ã ÷ ‡V"
+	[?@]1,16 "V                   V"
+	[?@]1,17 "Vá ë õ • Ø π √ Õ ◊ ·V"
+	[?@]1,18 "V                   V"
+	[?@]1,19 "Và í ú ¶ ∞ ∫ ƒ Œ ÿ ‚V"
+	[?@]1,20 "V                   V"
+	[?@]1,21 "Vâ ì ù ß ± ª ≈ œ Ÿ „V"
+	[?@]1,22 "ZWWWWWWWWWWWWWWWWWWW["
+	[?@]23,03 "VOV Ovrw"
+	[?@]23,21 "VEV Back"
+	vpoke 6912,200:vpoke 6916,200
+	vpoke 6920,200:vpoke 6928,200
+
+	if isOverview then gosub {end_overview}
+	declare ovrwX, ovrwY, bytePos, sliceSize, lastSlice, ovrwRegion
+
+	{explode_keys}
+		a$=inkey$
+		if a$ = "O" then gosub {overview}
+
+		if a$ = chr$(&h1c) and ovrwX < 9 and isOverview then ovrwX = ovrwX + 1 :gosub {move_overview_sprite}
+		if a$ = chr$(&h1d) and ovrwX > 0 and isOverview then ovrwX = ovrwX - 1 :gosub {move_overview_sprite}
+		if a$ = chr$(&h1f) and ovrwY < 9 and isOverview then ovrwY = ovrwY + 1 :gosub {move_overview_sprite}
+		if a$ = chr$(&h1e) and ovrwY > 0 and isOverview then ovrwY = ovrwY - 1 :gosub {move_overview_sprite}
+
+		if a$ = chr$(13) and isOverview then _
+			regionStart = (ovrwY * sliceSize) + (ovrwX * (sliceSize * 10)):
+			goOverview = true:
+			cursorPos = regionStart:
+			cursorX = 16:
+			cursorY = 23:
+			if regionStart + 799 > gameLength then _
+				regionStart = gameLength - 799:
+				cursorX = 16:
+				cursorY = 23:
+				cursorPos = regionStart:
+				goto {search_screen} _
+			else _
+				goto {search_screen}
+			endif
+		endif
+
+		if a$ = "E" then goto {search_screen}
+
+	goto {explode_keys}
+
+	{move_overview_sprite}
+		vpoke 6912,(ovrwY + 1) * 16 + 6  :vpoke 6913,(ovrwX + 1) * 16 
+		vpoke 6916,(ovrwY + 1) * 16 + 14 :vpoke 6917,(ovrwX + 1) * 16
+		ovrwRegion = (ovrwY * sliceSize) + (ovrwX * (sliceSize * 10))
+		if ovrwRegion + 799 > gameLength then ovrwRegion = gameLength - 799
+		[?@]27,13 string$(4 - len(hex$(ovrwRegion)),"0") + hex$(ovrwRegion)
+		[?@]27,15 string$(4 - len(hex$(ovrwRegion + 799)),"0") + hex$(ovrwRegion + 799)
+	return
+
+	{overview}
+		bytePos = 0
+		isOverview = true
+		sliceSize = (gameLength / 100)
+		lastSlice = (9 * sliceSize) + (9 * (sliceSize * 10)) + 8
+
+		[?@]2,2 "WWWWWWWSCANWWWWWWWW"
+		[?@]2,22 "WWWWWVÈVStopWWWWWWW"
+
+		for f = 1 to lastSlice step sliceSize
+			for i = f to f + 7
+				vpoke 1024 + bytePos,vpeek(1024 + bytePos) xor 255
+				get #1,i+1
+				a$ = bytes$
+				vpoke 1024 + bytePos,asc(a$)
+				if inkey$ = " " then {end_overview}
+				bytePos = bytePos + 1
+			next
+		next
+
+		{end_overview}
+			vpoke 6912,(ovrwY + 1) * 16 + 6  :vpoke 6913,(ovrwX + 1) * 16 
+			vpoke 6916,(ovrwY + 1) * 16 + 14 :vpoke 6917,(ovrwX + 1) * 16
+
+			[?@]23,05 "VÍV Move"
+			[?@]23,07 "VËV Go"
+			[?@]23,11 "Region"
+
+			ovrwRegion = (ovrwY * sliceSize) + (ovrwX * (sliceSize * 10))
+			if ovrwRegion + 799 > gameLength then ovrwRegion = gameLength - 799
+			[?@]23,13 "St# " + string$(4-len(hex$(ovrwRegion)),"0")+hex$(ovrwRegion)
+			[?@]23,15 "Ed# " + string$(4-len(hex$(ovrwRegion + 799)),"0")+hex$(ovrwRegion + 799)
+
+			[?@]02,2 "WWWWWWWWWWWWWWWWWWW"
+			[?@]2,22 "WWWWWWWWWWWWWWWWWWW"
+		return
+end
+
+{window_requester}
+	x = 5 :y = 10 :w = 21 :h = 2
+
+	gosub {vram_conversion}
+	[var0]VRAMx:[var1]VRAMy:[var2]VRAMw:[var3]VRAMh:[copy_VRAM]0
+	[?@]5,10 "XWWWWWWWWWWWWWWWWWWWY"
+	[?@]5,11 "VAre you sure? (Y/N)V"
+	[?@]5,12 "ZWWWWWWWWWWWWWWWWWWW[
+	a$ = inkey$: if a$ <> "Y" and a$ <> "N" then {@}
+	if a$ = "Y" then return
+	[var0]VRAMx:[var1]VRAMy:[var2]VRAMw:[var3]VRAMh:[copy_VRAM]1
+return {read_keyboard_main}
+
+{vram_conversion}
+	## Convert between .bin and DATA window size coordinates
+	## .bin needs width and heigth, DATA needs VRAM position
+	s=&h1800
+	VRAMx = fn horiz(x,y,s):
+	VRAMy = fn verti(x,y,s)
+	VRAMw = w+1 :VRAMh = h+1
+	if mlFallback then _
+		s=0 :VRAMw = fn horiz(w,h,s) :VRAMh = fn verti(w,h,s)
+	endif
+return
+
+{game_small}
+	[?@]13,15 "Sorry": 
+	[?@]0,16 "The game must be over 800 bytes":
+	[?@]5,17 "Press space to restart"
+	[pause]
+	screen 0
+goto {insert_disk}
+
+{error}
+	if err = 53 and errorType = 2 then goto {input_past_end}
+	if err = 56 and errorType = 2 then goto {input_past_end}
+	if err = 53 and errorType = 4 then errorType = 0 :configLoad = false :resume {config_failed}
+	if err = 56 and errorType = 3 then errorType = 0 :resume {ml_fallback}
+	if (err = 53 and errorType = 1) or err = 70 then goto {file_not_found}
+	~errorNum = err :if errorNum > 25 then errorNum = errorNum - 24
+	for f = errorM(errorNum) to errorM(errorNum + 1):
+		print chr$(peek(&h3D75 + f));:
+	next
+	print " at"; erl
+{stopped}
+	close
+end
+
+{file_not_found}
+	print:print "No files found"
+	print:print "Press space to restart"
+	a$ = inkey$ :if a$ = " " then print else {@} 
+	errorType = 0
+	cls
+resume {insert_disk}
+on error goto 0
+
+{input_past_end}
+	print:print
+	if err = 53 then print gameName$;" not found"
+	if err = 56 then print "Invalid name"
+	print:print "Press space to restart"
+	a$ = inkey$ :if a$ = " " then print else {@}
+	errorType = 0
+resume {insert_disk}
+on error goto 0
+
+' Error Messages in ROM
+{portuguese_ROM}
+data 0,13,26,43,52,66,75,89,110,132,147
+data 164,178,192,210,223,239,253,271,287
+data 304,311,328,344,359,371,383,396,410
+data 429,444,459,475,501,520,531
+{english_ROM}
+data 0,17,30,51,63,85,94,108,130,153,173
+data 190,205,219,239,255,282,297,321,338
+data 351,361,382,400,416,437,452,467,483
+data 498,516,531
+
+' ML Routines at 0xd000 ASM Source on GitHub
+{ml_routines}
+data 00,00,00,00,00,00,00,00,c3,14,da,c3,27,da,c3,35
+data da,c3,5a,da,3a,00,da,47,21,40,00,cd,4a,00,ee,ff
+data cd,4d,00,23,10,f5,c9,3a,f8,f7,ed,4b,00,da,2a,02
+data da,cd,56,00,c9,3a,f8,f7,fe,00,ca,4c,da,ed,4b,02
+data da,ed,5b,00,da,21,93,da,cd,5c,00,c9,ed,4b,02,da
+data 11,93,da,2a,00,da,cd,59,00,c9,11,40,00,21,4e,18
+data 3a,00,da,47,c5,3a,01,da,47,c5,eb,cd,4a,00,eb,06
+data 08,17,f5,38,1a,3e,10,cd,4d,00,f1,23,10,f3,13,d5
+data 11,18,00,19,d1,c1,10,e1,21,56,18,c1,10,d6,c9,3e
+data e4,18,e4
+
+' Character Shapes
+{character_shapes}
+data 255,128,128,128,128,128,128,255
+data 255,0,0,0,0,0,0,255
+data 255,1,1,1,1,1,1,255
+data 255,129,129,129,129,129,129,255
+data 255,255,255,255,255,255,255,255
+data 0,126,126,126,126,126,126,0
+data 4,4,36,100,252,96,32,0
+data 0,0,219,154,82,211,0,0
+data 231,195,165,24,24,165,195,231
+
+' Sprite Shapes
+data 255,129,0,0,0,0,0,0
+data 129,255,0,0,0,0,0,0
+data 0,128,128,128,128,128,128,0
+data 255,129,129,129,129,129,129,255
+
+' Functions Not Used
+' Create Character Block
+c=127
+for x=2 to 11
+	for y=3 to 12
+		c=c+1
+		:[?@]x,y:print chr$(c)
+	next
+next
+end
+
+' Character Map
+for i=0 to 255
+	x=i mod 32: y=i\32
+	c=i
+	if c<32 or c=127 then c=32
+	[?@]x,y chr$(c)
+	[?@]x,y+10 chr$(1)+chr$(c)
+next
+end
