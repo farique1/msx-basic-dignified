@@ -22,4 +22,4 @@ Arguments: ` -bc 1 -uo -ar -br -sl -vs 5`
 
 
 **Change Graph Kit running after converson.**  
-![# change-graph-kit](https://github.com/farique1/msx-basic-dignified/blob/master/Images/change-graph-kit.png)  
+![# Change-graph-kit](https://github.com/farique1/msx-basic-dignified/blob/master/Images/Change-graph-kit.png)  
