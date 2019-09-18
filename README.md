@@ -303,7 +303,7 @@ Add a `:rem` at the end of the line with the name of the labels used on its bran
 ```  
 **Blank lines**  
 Blank lines are stripped from the source by default but they can also be left on the converted code.  
-Blank lines after Dignified commands (define, declare,...) are always removed.
+Blank lines after Dignified commands (define, declare,...) are always removed.  
 Extra lines can also be added close to labels for clarity and organization.  
   
 - *Keep blank lines*  
