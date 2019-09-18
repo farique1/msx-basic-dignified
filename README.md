@@ -115,9 +115,9 @@ To use these variables they must be declared, there are two ways to do that:
   -- In place, preceded by an `~`: `~long_var = 3`.  
 A `declare` instruction declares the long name to all types of variable so explicit type character (`$%!#`) cannot be used.
 When the first long name is used with an `~` or on a `declare` line a new two letter variable is assigned to it, the next time it is used, even with the `~` the previous assignment is maintained. A warning will be given.  
-An explicit assignment between a long and a short name can be forced by using  a `:` when declaring a variable (only on a `declare` command): `declare variable:va` will assign `VA` to `variable`.
+An explicit assignment between a long and a short name can be forced by using  a `:` when declaring a variable (only on a `declare` command): `declare variable:va` will assign `VA` to `variable`.  
 After it is assigned, a long name variable can be used without the `~` but a variable without the `~` that has not been previously assigned will be treated as a loose text and not be converted, will not even generate any erros or warnings.  
-Reserved MSX Basic commands should not be used as variables names.
+Reserved MSX Basic commands should not be used as variables names.  
 Classic one and two letters variables can be used normally alongside long names ones, just be aware that the letters at the end of the alphabet are being used up and they may clash with the hard coded ones.  
 The conversion will try to catch illegal variables when declared but is not always perfect so keep an eye on them.  
 The MSX Syntax Highlight will show illegal variables on `declare` lines or when assigned with `~`.  
