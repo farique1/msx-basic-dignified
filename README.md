@@ -29,7 +29,7 @@ Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabme
 > There is a [*Syntax Highlight*, a *Theme*, a *Comment Setting* and a *Build System*](https://github.com/farique1/MSX-Sublime-Tools) available for **Sublime Text 3** working with the **MBD** rules to help improve the overall experience.  
 There is also a specific syntax highlight for the Classic MSX Basic and a system to run the classic Basic straight from Sublime 3.  
   
-![# Versions.png](https://github.com/farique1/msx-basic-dignified/blob/master/Images/Versions.png)  
+![# Versions.jpg](https://github.com/farique1/msx-basic-dignified/blob/master/Images/Versions.jpg)  
   
 >Please, be aware that **MBD** and its tools are by no mean finished products and are expected to misbehave.  
   

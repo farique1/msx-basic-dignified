@@ -2,7 +2,7 @@
 ## **v1.2.0**    
 >According to the Semantic Versioning it was supposed to be **v2** (somewhat incompatible with the previous version) but no, it is not **v2**.  
 
-- Variables on DEFINES. A [] inside a DEFINE will be substituted for an argument touching the closing bracket.
+- Variables on DEFINES. A `[]` inside a DEFINE will be substituted for an argument touching the closing bracket.
 - - If the variable bracket is not empty, the text inside will be used as default in case no argument is found
 - - ex: using `[var] [poke 100,[10]]`, a subsequent `[var]30` will be replaced by `poke 100,30`
 - New way of assigning long name variables:
