@@ -1,10 +1,7 @@
-
-  
 ![# MSX Basic Dignified](https://github.com/farique1/msx-basic-dignified/blob/master/Images/msxbadig-logo.png)  
 # MSX Basic Dignified  
   
-## **`v1.2`**  
- >Yet again, according to the Semantic Versioning it was supposed to be v2 (somewhat incompatible with the previous version) but I'm not ready yet. Go see the [changelog](https://github.com/farique1/msx-basic-dignified/blob/master/changelog.md).
+## **`v1.3`**  
   
 **Or: My First Python Project.**  
 Or: How to learn a new language?  
@@ -18,7 +15,6 @@ Or: How to learn a new language?
   
 And so this project was born.  
 And so this project is (~~for now~~ after some messing) an ~~atrocious~~ still not incredible example of Python coding.  
-  
   
 **MSX Basic Dignified** allows you to code MSX Basic programs using modern coding standards on your preferred editor, convert them to the old MSX Basic structure and load it into an MSX (emulated or not.)  
   
@@ -72,6 +68,7 @@ return
 - Directing the code flow is done with **labels**.  
 Labels are created using curly brackets`{like_this}` and can be used alone on a line to receive the code flow or on a branching (jump) instruction to direct the flow to the corresponding line label. They can only have letters, numbers and underscore and they cannot be only numbers. `{@}` points to its own line (abraço, Giovanni!).  
 Labels marking a section are called line labels and labels on jump instructions  (`GOTO`, `GOSUB`, etc) are called branching labels.  
+A comment can be used after a line label using a `'` (`REM` is not supported) and it will stay after the conversion as an addition to the label or alone in the line, depending on the label conversion argument used.  
 Labels not following the naming convention, duplicated line labels or branching to inexistent line labels will generate an error and stop the conversion. Labels with illegal characters are higlighted when using the MSX Syntax Highlight.  
 *More on labels later.*  
 ```BlitzBasic  
@@ -85,10 +82,11 @@ if inkey$ = "" then goto {@} else goto {hello_loop}
 20 PRINT "hello world"  
 30 IF INKEY$="" THEN GOTO 30 ELSE GOTO 10  
 ```  
-**Defines** are used to create aliases on the code that are replaced when the conversion is made. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many as needed and there can be several on the same line, separated by commas: `define [name1] [content1], [name2] [content2], [name3] [content3]`.  
+- **Defines** are used to create aliases on the code that are replaced when the conversion is made. They are created with `define [name] [content]` where the `[content]` will replace the `[name]`. There can be as many as needed and there can be several on the same line, separated by commas: `define [name1] [content1], [name2] [content2], [name3] [content3]`.  
 Duplicated **defines** will give an error and stop the conversion.
 A `[]` inside a **define** content will be substituted for an argument touching the closing bracket. If the variable bracket is not empty the text inside will be used as default in case no argument is found.  
 For instance, using `DEFINE [var] [poke 100,[10]]`, a subsequent `[var]30` will be replaced by `poke 100,30`; `[var]` alone will be replaced by `poke 100,10`.  
+Variables passed to **defines**  must be followed by an space, indicating the end of the variable content. A **define** that takes a variable but was not given one must also be followed by an space after the closing bracket, indicating no variable is given.  
   > **Defines** cannot be used as variables for other **defines** (for now).  
 
 `[?@]x,y ` is a built in **define** that becomes `LOCATEx,y:PRINT`, it must be followed by an empty space.  
@@ -134,11 +132,46 @@ endif
 ```BlitzBasic  
 10 IF ZZ$="cake" AND DK=3 THEN ZY$="belly full":ZX=10
 ```  
-Optional:  
+Optional, with  `msxbadig.py test.bad -vs`
 ```BlitzBasic  
 20 ' ZZ-food, ZY-result, ZX-sleep, DK-drink
 ```  
+
+- **Proto-functions** can be used to emulate the use of modern function definition and calls.  
+They are defined with `func .functionName(arg1, arg2, etc)` and must end with a `return` alone on a line.  
+The arguments can have default values as in `func .function(arg$="teste")` and the `return` can have return variables like `return ret1, ret2, etc`. The `return` and can also have a `:` before it or at the end of the line above to join them on the conversion.  
+The functions are called with `.functionName(arg1, arg2, etc)` and can be assigned to variables like `ret1, ret2 = .functionName(args)`. They can be separated by `:` as usual and can also come after a `THEN` or `ELSE`: `if a=1 then .doStuff() else .dontDoStuff()`.  
+The number of arguments and return variables must be the same and explicitly given except for an argument with a default value, in this case the default will be used if a empty space is passed on that position. To use a function call with empty argument positions and preserve the variable value, the default must be the variable name, eg: `func .applyColor(color1=color1, color2=color2)` can be called with `.applyColor(10,)`, `.applyColor(,20)` or even `.applyColor(,)`.  
+**Proto-functions** with return variables cannot have conditional returns (only the first `return` alone on a line will be parsed for variables and will signal the end of the function definition) but the conditional value can be established a priori in a variable with an `IF THEN ELSE` and then passed on the `return`.  
+Obviously there are no local variables on the MSX Basic (which can limit the usefulness of the proto-functions) but this can be simulated by using unique named variables inside the functions. They can also be useful to apply the result to different variables at different points in the code.  
+When converting to Classic Basic, function definitions are essentially **labels** so they cannot have the same name as one of them. A function call is a `gosub` to that label with the variables assigned before and after it accordingly.  
+If the arguments or return variable are the same between function calls or definitions they will not be equated on the conversion to avoid unnecessary repetition like `A$=A$`. The same way, an empty argument location with a default variable equated to itself will not be converted.  
+Different from a normal function, `func` definitions will not deviate the code flow from itself so they must be placed at a point unreachable by the normal code flow. Everything on the same line as the function definition will be converted to a comment. `##` comments will be ignored as usual.  
+Upon conversion, function definitions and calls will follow the **label** configurations.  
+	> Some known limitations:  
+	> **Proto-function** definitions and calls cannot have the `_` line separator inside them.  
+	> Function recursion (called from inside itself) is not recommended.  
+	> Text equal to function calls (`.xxx()`) inside `REM`, `DATA` or `""` WILL be converted as function calls.   
+	> There must be an empty line after a `return` if it is the last line of the code.  
   
+```BlitzBasic  
+ch$ = .getUpper("a")
+print ch$
+end
+func .getUpper(up$)
+	ch = asc(up$) - 32
+return chr$(ch) 
+```  
+`msxbadig.py test.bad`  
+```BlitzBasic  
+10 UP$="a":GOSUB 40:CH$=CHR$(CH)
+20 PRINT CH$
+30 END
+40 ' {getUpper}
+50 CH=ASC(UP$)-32
+60 RETURN
+```    
+
 - A single Classic MSX Basic line can be written on several lines on **MBD** using `:` or `_` breaks and **joined** when converting to form a single line.  
 Colons `:` can be used at the end of a line (joining the next one) or the beginning of a line (joining the previous one) and are retained when joined. They are used the same way as the Classic MSX Basic, separating different instructions.  
 Underscores `_` can only be used at the end of a line and they are deleted when the line is joined. They are useful to join broken instructions like `IF THEN ELSE`, long quotes or anything that must form a single command on the converted code.  
@@ -159,7 +192,8 @@ endif
 ```BlitzBasic  
 10 IF A$="C" THEN FOR F=1 TO 10:LOCATE 1,1:PRINT F:NEXT:LOCATE 1,3:PRINT "done":END  
 ```  
-- The source code can use exclusive **comments** `##` that are stripped during the conversion.  
+
+- The Dignified code can use exclusive **comments** `##` that are stripped during the conversion.  
 Regular `REM`s are kept. A tenacious bug (called Regex Incompetency) prevents the `##` from being removed if there is a `"` after it.  
 ```BlitzBasic  
 ## this will not be converted  
@@ -179,7 +213,7 @@ print "This is the main file."
 '
 include "help.bad"
 '
-print "This is the mais file again."
+print "This is the main file again."
 ```
 `msxbadig.py test.bad`
 ```BlitzBasic  
@@ -188,7 +222,7 @@ print "This is the mais file again."
 30 PRINT "This is a helper code."
 40 PRINT "Saved on another file."
 50 '
-60 PRINT "This is the mais file again."
+60 PRINT "This is the main file again."
 ```
 
 - **True** and **false** statements can be used with numeric variables, they will be converted to `-1` and `0` respectively and their variables can be treated as true booleans on `if`s and with `not` operators.  
@@ -203,6 +237,18 @@ if condition then variable = not variable
 20 ZY=0
 30 IF ZY THEN ZZ=NOT ZZ
 ``` 
+
+- **Shorthand and compound** arithmetic operators (`++`, `--`, `+=`, `-=`, `*=`, `/=`, `^=`) can be used and will be converted to normal MSX Basic operations.  
+If the **unpack operator** (`-uo`) argument is used, the conversion will try to preserve the spaces used with the operators.  
+```BlitzBasic  
+PX++ :PY --
+LO+=20 :DI -= 10
+```  
+`msxbadig.py test.bad -uo`  
+```BlitzBasic  
+10 PX=PX+1:PY = PY - 1
+20 LO=LO+20:DI = DI - 10
+```
 
 ### Configurable arguments  
 Most of **MBD** functionality is configurable through an .ini file or command line arguments  (`ini:` and `arg:` on the examples below) as follow.  
@@ -257,7 +303,7 @@ Handle how labels are converted.
 `ini: handle_label_lines` `arg: -ll {0,1,2}` `Default: 0`  
 By default (option `0`) line labels are left on the code on a `REM` line for reference.  
 Their names can be removed, leaving only a blank `REM` on its place (option `1`)  as an anchor or separator.  
-On both cases above the corresponding branching labels are replaced with the line number of the `REM` line where the label is.  
+On both the above cases the corresponding branching labels are replaced with the line number of the `REM` line where the label is.  
 They can also be stripped altogether (option `2`), leaving a smaller, more concise code. In this case the code flow is directed to the line mediately after where the label was.  
 ###  
 ```BlitzBasic  

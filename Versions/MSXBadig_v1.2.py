@@ -1,9 +1,9 @@
 """
 MSX Basic Dignified
-v1.3
+v1.2
 Converts modern typed MSX Basic to native format.
 
-Copyright (C) 2020 - Fred Rique (farique) https://github.com/farique1
+Copyright (C) 2019 - Fred Rique (farique) https://github.com/farique1
 
 Better experienced with MSX Sublime tools at:
 https://github.com/farique1/MSX-Sublime-Tools
@@ -12,12 +12,31 @@ Syntax Highlight, Theme, Build System and Comment Preference.
 msxbadig.py <source> <destination> [args...]
 msxbadig.py -h for help.
 
-New: Implemented Proto-functions
-     Implemented double arithmetic and compound operators (++, --, +=, -=, *=, /=, ^=)
-     Line labels can have a ' (not REM) after it. Will be preserved on conversion with -ll 0 and -ll 1
-     Fixed bug preventing the correct replacement of DEFINEs with different variables on the same line
-     Fixed bug breaking labels with "rem" on the name.
-     Fixed bug where part of instructions and variables were being replaced by shorter variables names contained in them if they shared the same line.
+New: Variables on DEFINES. A [] inside a DEFINE will be substituted for an argument touching the closing bracket.
+       If the variable bracket is not empty, the text inside will be used as default in case no argument is found
+       ex: using 'DEFINE [var] [poke 100,[10]]', a subsequent '[var]30' will be replaced by 'poke 100,30'
+     New way of assigning long name variables:
+       A long name now is attached to a short name independently of the variable type, it only need to be declared
+       once and can be used for all types, int, single, double, string and typeless of the same name.
+       The DECLARE command now takes only the base name of the variable, without the type symbol,
+       it also can assign explicit short names in the format AAAA:BB where the AAAA is the long name and BB the short.
+       This will reduce the available names but will be more compatible with the MSX basic conventions
+       and will still give ~700 variables (26*26) not counting the ~300 (letter+number and single letters) not assignable.
+     Added support for all types of variables. Int, single, double, string and none.
+     Added GitHub link to REM header
+     Added True and False statements, converts to -1 and 0. Can use NOT operator to flip or check.
+     Added an INCLUDE command to insert and external .bad file into the current code.
+     Fixed a bug misinterpreting commas inside the DEFINES
+     Fixed a bug potentially causing REM and DATA being mixed with normal instructions and QUOTES mixed with itself.
+     Fixed handling of leading line numbers
+     Error if duplicated DEFINES are found.
+     Error if duplicated line labels are found.
+     Warning if variable DECLARED more than once.
+     Better handling of DEFINEs and DECLAREs
+     Handles error when destination folder is not found.
+     Blank lines removed after a  Dignified command (define, declare,...) even when opted to keep blank lines.
+     Keep space to prevent ST OR A confusion with S TO AR.
+     Minor log output tweak
 
 Bugs: Not removing end line ## if there are quotes after it
       Leading number on a REM line broken with : being removed (if the line is a REM they don't need to be removed)
@@ -31,13 +50,12 @@ import re
 import argparse
 import ConfigParser
 import os.path
-from itertools import izip_longest
 # import time
 # start = time.time()
 
 # Config
-file_load = ''  # '/Users/Farique/Desktop/Projects/MSXBadig/DiskBadig/CGK150_T.bad'   # Source file
-file_save = ''  # '/Users/Farique/Desktop/Projects/MSXBadig/DiskBadig/CGK150_T.asc'   # Destination file
+file_load = ''              # Source file
+file_save = ''              # Destination file
 line_start = 10             # Start line number
 line_step = 10              # Line step amount
 leading_zero = False        # Add leading zeros
@@ -373,7 +391,6 @@ show_log('', 'Removing ## and trailing spaces', 1)
 show_log('', 'Deleting or REMarking blank lines', 1, bullet=0)
 show_log('', 'Storing and deleting DEFINE lines', 1, bullet=0)
 show_log('', 'Storing and deleting DECLARE lines', 1, bullet=0)
-show_log('', 'Storing and labelizing FUNC lines', 1, bullet=0)
 arrayB = []
 defines = {}
 prerv_dignified_command = False
@@ -381,10 +398,6 @@ define_reg = re.compile(r'(?<=\])\s*(?=\[)')
 define_reg_line = re.compile(r'(\[[^\]]+\])')
 define_reg_local = re.compile(r'(\[[^\]]*\])')
 define_reg_split = re.compile(r'(?<=\])\s*,\s*(?=\[)')
-proto_functions = {}
-found_proto_func = False
-prev_proto_func_name = ''
-prev_proto_func_line = 0
 for line in array:
     line_num, line_alt, line_file = line
 
@@ -445,121 +458,12 @@ for line in array:
             method = '' if new_long_var[0][2] == '' else '(:)'
             show_log(line, ' '.join(['declare_found' + method + ':', long_var, short_var]), 3)
 
-    elif re.match(r'^\s*func\s+\.\w+', line_alt, re.IGNORECASE):
-        new_proto_func = re.match(r'(?:^\s*func\s+)(\.\w+)(?:\()(.*(?=\)))\)(.*$)', line_alt, re.IGNORECASE)
-        if new_proto_func:
-            if found_proto_func:
-                line = prev_proto_func_line, line_alt, line_file
-                show_log(line, ' '.join(['func_without_return:', prev_proto_func_name]), 1, bullet=2)
-                show_log('', 'Execution_stoped\n', 1, bullet=0)
-                raise SystemExit(0)
-
-            proto_func_name = new_proto_func.group(1)
-            proto_func_var = new_proto_func.group(2).replace(' ', '').split(',')
-            prev_proto_func_name = proto_func_name
-            prev_proto_func_line = line_num
-            proto_func_line_end = '' if re.match(r'(^\s*##.*$)', new_proto_func.group(3)) else new_proto_func.group(3)
-
-            arrayB.append((line_num, '{' + proto_func_name[1:] + '}' + proto_func_line_end, line_file))
-            show_log(line, ' '.join(['func_found:', prev_proto_func_name, new_proto_func.group(2).replace(' ', '')]), 3)
-            found_proto_func = True
-
-    elif found_proto_func and re.match(r'^\s*:?\s*return\s+', line_alt, re.IGNORECASE):
-        proto_func_return = re.match(r'(?:^\s*(:?)\s*return\s+)(.*?(?=(:| _|$)))(:| _)?', line_alt, re.IGNORECASE)
-        if proto_func_return:
-            proto_func_return_vars = proto_func_return.group(2).replace(' ', '').split(',')
-            proto_functions[proto_func_name] = (proto_func_var, proto_func_return_vars)
-            arrayB.append((line_num, proto_func_return.group(1) + 'return' + proto_func_return.group(3), line_file))
-            show_log(line, ' '.join(['func_return_found:', prev_proto_func_name, proto_func_return.group(2).replace(' ', '')]), 3)
-            found_proto_func = False
-
     else:
         prerv_dignified_command = False
         line_alt = re.sub(r'(?![^"]*")(?<!\S)##.*', '', line_alt).rstrip() + '\n'
         # Above line not removing endline ## if there are quotes after it (but preserve ## inside)
 
         arrayB.append((line_num, line_alt, line_file))
-
-if found_proto_func:
-    line = prev_proto_func_line, line_alt, line_file
-    show_log(line, ' '.join(['func_without_return:', prev_proto_func_name]), 1, bullet=2)
-    show_log('', 'Execution_stoped\n', 1, bullet=0)
-    raise SystemExit(0)
-
-array = arrayB
-
-
-show_log('', 'Replacing proto-function calls with GOSUBs and vars', 1)
-arrayB = []
-for line in array:
-    line_num, line_alt, line_file = line
-
-    proto_func_call = re.findall(r'(\.\w+)\(.*?\)', line_alt)
-    if proto_func_call:
-
-        for functions in range(0, len(proto_func_call)):
-            proto_func_call = re.findall(r'(\.\w+)\(.*?\)', line_alt)
-            curr_func = proto_func_call[0]
-            if curr_func in proto_functions.keys():
-
-                proto_func_find_elements = re.findall(r'^(.*?\s*)(\=)?\s*' + curr_func + r'\((.*?)\)(.*$)', line_alt)
-                if proto_func_find_elements[0][1] == '=':
-                    func_line_start = re.match(r'(.*(?:^|then|else|:)\s*)(.*)', proto_func_find_elements[0][0], re.IGNORECASE)
-                    proto_func_call_elements = [func_line_start.group(2), proto_func_find_elements[0][2]]
-                    proto_func_call_line = [func_line_start.group(1), proto_func_find_elements[0][3]]
-                else:
-                    proto_func_call_elements = [proto_func_find_elements[0][1], proto_func_find_elements[0][2]]
-                    proto_func_call_line = [proto_func_find_elements[0][0], proto_func_find_elements[0][3]]
-
-                proto_func_call_return = proto_func_call_elements[0].replace(' ', '').split(',')
-                proto_func_call_variables = proto_func_call_elements[1].replace(' ', '').split(',')
-                proto_functions[curr_func] = (proto_functions[curr_func][0], proto_functions[curr_func][1], proto_func_call_variables, proto_func_call_return)
-
-                func_line = ''
-                func_colon = space_bef_colon + ':' + space_aft_colon
-                func_oper = ' ' if unpack_operators else ''
-
-                for i in range(0, 2):  # do the function calling vars and return vars
-                    for fdef_var, fcal_var in izip_longest(proto_functions[curr_func][i], proto_functions[curr_func][i + 2]):
-
-                        if i == 1:
-                            fdef_var, fcal_var = fcal_var, fdef_var
-
-                        if fcal_var is None or fdef_var is None:
-                            show_log(line, ' '.join(['func_require_' + str(len(proto_functions[curr_func][i])) + '_args:', curr_func]), 1, bullet=2)
-                            show_log('', 'Execution_stoped\n', 1, bullet=0)
-                            raise SystemExit(0)
-
-                        fcal_var = fcal_var.replace(' ', '')
-                        fdef_var = fdef_var.replace(' ', '')
-                        has_def = True if '=' in fdef_var else False
-
-                        if fcal_var.replace('~', '') != fdef_var.split('=')[0].replace('~', ''):
-                            if fcal_var == '' and has_def and i == 0:
-                                fcal_var = fdef_var.split('=')[1]
-                                fdef_var = fdef_var.split('=')[0]
-                                if fcal_var.replace('~', '') != fdef_var.replace('~', ''):
-                                    func_line += fdef_var + func_oper + '=' + func_oper + fcal_var + func_colon
-                            elif fcal_var == '' or fdef_var == '':
-                                show_log(line, ' '.join(['func_missing_arg:', curr_func]), 1, bullet=2)
-                                show_log('', 'Execution_stoped\n', 1, bullet=0)
-                                raise SystemExit(0)
-                            else:
-                                fdef_var = fdef_var.split('=')[0]
-                                func_line += fdef_var + func_oper + '=' + func_oper + fcal_var + func_colon
-
-                    if i == 0:
-                        func_line += 'gosub' + general_spaces + '{' + curr_func[1:] + '}' + func_colon
-
-                line_alt = proto_func_call_line[0] + func_line[:-len(func_colon)] + proto_func_call_line[1]
-                show_log(line, ' '.join(['func_call_found:', proto_func_call_elements[0].replace(' ', ''), curr_func, proto_func_call_elements[1].replace(' ', '')]), 3)
-            else:
-                show_log(line, ' '.join(['func_not_defined:', curr_func]), 1, bullet=2)
-                show_log('', 'Execution_stoped\n', 1, bullet=0)
-                raise SystemExit(0)
-
-    arrayB.append((line_num, line_alt, line_file))
-
 array = arrayB
 
 
@@ -573,31 +477,29 @@ for line in array:
             line_alt = re.sub(r'(\[\?@\])(\S+,\S+|\S+)', r'locate' + general_spaces + r'\2:print', line_alt)
             show_log(line, ' '.join(['replaced_[?@]']), 3)
 
-        line_defs = re.findall(r'(\[[^\]]+\])(\S*?)(?=\s|:|$|\[)', line_alt, re.IGNORECASE)
-        line_defs = list(set(line_defs))
+        line_defs = list(set(define_reg_line.findall(line_alt)))
         if line_defs:
             defines_local = []
             for defs in line_defs:
                 def_arg = None
                 try:
-                    def_alt = defines[defs[0]]
+                    def_alt = defines[defs]
                 except KeyError as e:
                     show_log(line, ' '.join(['define_not_found:', str(e)]), 2, bullet=4)
                     continue
-                def_var = define_reg_local.findall(defines[defs[0]])
-                def_var = None if not def_var else def_var[0]
-                def_arg = defs[1]
+                def_var = define_reg_local.findall(defines[defs])
                 if def_var:
+                    def_arg = re.search(r'(?<=\[' + defs[1:-1] + r'\])' + r'\S*?(?=\s|:|$|\[)', line_alt).group(0)
                     if def_arg:
-                        def_alt = defines[defs[0]].replace(def_var, def_arg)
+                        def_alt = defines[defs].replace(def_var[0], def_arg)
                     else:
-                        def_alt = defines[defs[0]].replace(def_var, def_var[1:-1])
-                else:
+                        def_alt = defines[defs].replace(def_var[0], def_var[0][1:-1])
+                if def_arg is None:
                     def_arg = ''
-                defines_local.append([defs[0], def_alt, def_arg])
+                defines_local.append([defs, def_alt, def_arg])
 
-            for def_local in defines_local:
-                line_alt = line_alt.replace(def_local[0] + def_local[2], def_local[1])
+            for defs in defines_local:
+                line_alt = line_alt.replace(defs[0] + defs[2], defs[1])
                 show_log(line, ' '.join(['replaced_defines:', defs[0], '->', defs[1]]), 3)
 
     arrayB.append((line_num, line_alt, line_file))
@@ -686,7 +588,7 @@ line_current = line_start
 for line in array:
     line_num, line_alt, line_file = line
 
-    label = re.match(r'(^\s*{.+?})(.*$)', line_alt)
+    label = re.match(r'(^\s*{.+?})', line_alt)
     if label:
         if label.group(1).lstrip() in labels_store:
             show_log(line, ' '.join(['duplicated_label:', label.group(1).lstrip()]), 1, bullet=2)
@@ -695,8 +597,7 @@ for line in array:
         labels_store[label.group(1).lstrip()] = line_current
         show_log(line, ' '.join(['got_label_line:', label.group(1).lstrip(), str(line_current)]), 3)
         if label_lines == 1:
-            label_line_end = label.group(2).lstrip()[1:] if label.group(2).lstrip()[:1] == "'" else label.group(2)
-            line_alt = label_rem_format + label_line_end
+            line_alt = label_rem_format
         elif label_lines == 2:
             continue
 
@@ -747,10 +648,10 @@ for line in array:
             show_log(line, ' '.join(['stored_data:', str(data_number), str(item)]), 3)
             data_number += 1
 
-    remark = re.findall(r'((?:^|:)\s*rem|(?:^|:|)\s*\')(.+)', line_alt, re.IGNORECASE)
+    remark = re.findall(r'(?:^|:|)\s*(rem|\')(.+)', line_alt, re.IGNORECASE)
     if remark:
         for item in remark:
-            # print "  - rem item --->>", item
+            # print "--- rem item --->>", item
             stored_comments.append(item[1])
             line_alt = line_alt.replace(item[0] + item[1], item[0] + "|" + str(comment_number) + "|")
             show_log(line, ' '.join(['stored_rem:', str(comment_number), str(item)]), 3)
@@ -782,7 +683,6 @@ for line in array:
     arrayB.append((line_num, line_alt, line_file))
 array = arrayB
 
-
 show_log('', 'Replacing long variables', 1)
 # First get all new declared variables
 arrayB = []
@@ -805,7 +705,7 @@ for line in array:
     if lone_words:
         for lone_word in lone_words:
             if lone_word[0] in var_dict:
-                line_alt = re.sub(r'((?<=^)|(?<=\W))' + lone_word[0] + r'(?=\W|$)', var_dict[lone_word[0]], line_alt)
+                line_alt = line_alt.replace(lone_word[0], var_dict[lone_word[0]])
                 show_log(line, ' '.join(['replaced_variable:', lone_word[0] + lone_word[1], "->", var_dict[lone_word[0]] + lone_word[1]]), 3)
     arrayB.append((line_num, line_alt, line_file))
 array = arrayB
@@ -838,16 +738,6 @@ for line in array:
     if true_false:
         line_alt = line_alt.replace('true', '-1')
         line_alt = line_alt.replace('false', '0')
-
-    comp_oper = re.findall(r'(\w+\$?(?:\(.*\))?)(\s*)(\+\=|\-\=|\*\=|\/\=|\^\=)', line_alt, re.IGNORECASE)
-    if comp_oper:
-        for items in comp_oper:
-            line_alt = line_alt.replace(items[0] + items[1] + items[2], items[0] + items[1] + '=' + items[1] + items[0] + items[1] + items[2][:1])
-
-    arit_oper = re.findall(r'(\w+\$?(?:\(.*\))?)(\s*)(\+\+|\-\-)', line_alt, re.IGNORECASE)
-    if arit_oper:
-        for items in arit_oper:
-            line_alt = line_alt.replace(items[0] + items[1] + items[2], items[0] + items[1] + '=' + items[1] + items[0] + items[1] + items[2][:1] + items[1] + '1')
 
     if capitalise_all:
         line_alt = line_alt.upper()
@@ -899,7 +789,7 @@ for line, number in zip(array, line_numbers):
 
     labels = re.findall(r'{[^}]*}', line_alt)
     if re.match(r'\s*{\w+?}', line_alt):
-        line_alt = re.sub(r'(\s*)({\w+?})(.*$)', r'\1' + label_rem_format + general_spaces + r'\2\3', line_alt)
+        line_alt = re.sub(r'(\s*)({\w+?})', r'\1' + label_rem_format + general_spaces + r'\2', line_alt)
 
     elif labels:
         append_label = space_bef_colon + ':' + space_aft_colon + label_rem_format

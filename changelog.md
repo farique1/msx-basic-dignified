@@ -1,7 +1,14 @@
+# MSX Basic Dignified
+
+## **v1.3.0**   
+- Implemented Proto-functions. Works as normal functions with some limitations. See README for details.  
+- Implemented double arithmetic and compound operators `++ -- += -= *= /= ^=`.  
+- Line labels can now have a `'` (not `REM`) after it. Will be preserved on conversion with `-ll 0` and `-ll 1`.  
+- Fixed bug preventing the correct replacement of DEFINEs with different variables on the same line.  
+- Fixed bug breaking labels with "rem" on the name.  
+- Fixed bug where part of instructions and variables were being replaced by shorter variables names contained in them if they shared the same line.  
 
 ## **v1.2.0**    
->According to the Semantic Versioning it was supposed to be **v2** (somewhat incompatible with the previous version) but no, it is not **v2**.  
-
 - Variables on DEFINES. A `[]` inside a DEFINE will be substituted for an argument touching the closing bracket.
 - - If the variable bracket is not empty, the text inside will be used as default in case no argument is found
 - - ex: using `[var] [poke 100,[10]]`, a subsequent `[var]30` will be replaced by `poke 100,30`
@@ -10,21 +17,21 @@
 - - once and can be used for all types, int, single, double, string and typeless of the same name.
 - - The DECLARE command now takes only the base name of the variable, without the type symbol,
 - - it also can assign explicit short names in the format AAAA:BB where the AAAA is the long name and BB the short.
-- - This will reduce the available names but will be more compatible with the MSX basic conventions
+- - This will reduce the available names but will be more compatible with the MSX Basic conventions
 - - and will still give ~700 variables (26*26) not counting the ~300 (letter+number and single letters) not assignable.
 - Added support for all types of variables. Int, single, double, string and none.
 - Added GitHub link to REM header
 - Added True and False statements, converts to -1 and 0. Can use NOT operator to flip or check.
-- Added an INCLUDE command to insert and external .bad file into the current code.
+- Added an INCLUDE command to insert an external .bad file into the current code.
 - Fixed a bug misinterpreting commas inside the DEFINES
 - Fixed a bug potentially causing REM and DATA being mixed with normal instructions and QUOTES mixed with itself.
 - Fixed handling of leading line numbers
 - Error if duplicated DEFINES are found.
 - Error if duplicated line labels are found.
 - Warning if variable DECLARED more than once.
-- Better handling of DEFINEs and DECLAREs
+- Better handling of DEFINEs and DECLAREs.
 - Handles error when destination folder is not found.
-- Blank lines removed after a  Dignified command (define, declare,...) even when opted to keep blank lines.
+- Blank lines now removed after a Dignified command (define, declare,...) even when opted to keep blank lines.
 - Keep space to prevent ST OR A confusion with S TO AR.
 - Minor log output tweak
 
