@@ -19,7 +19,7 @@ There is a [syntax highlight, theme, build system, snippets and comment setting]
 ## The Program  
 ### Standard behaviour  
   
-**MSX Basic Dignigied** reads a text file containing the Dignified code and write back a traditional MSX Basic in ASCII and/or tokenized format.  
+**MSX Basic Dignified** reads a text file containing the Dignified code and write back a traditional MSX Basic in ASCII and/or tokenized format.  
 The Dignified code uses a `.bad` extension, the ASCII is given `.asc` and the tokenized `.bas`.  
   
 > One of the flavours of [**MSX Basic Tokenizer**](https://github.com/farique1/MSX-Basic-Tokenizer) must be installed for tokenized output.  
