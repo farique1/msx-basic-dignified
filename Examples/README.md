@@ -9,7 +9,7 @@ An MSX Basic program writen the dignified way to showcase the features of **MSX 
 
 **Native MSX Basic converted with different settings.**  
 
-[`CGK-Classic.asc`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-Classic.asc)  
+[`CGK-Default.asc`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-Default.asc)  
 The default conversion with no arguments.  
 
 [`CGK-Compact.asc`](https://github.com/farique1/msx-basic-dignified/blob/master/Examples/CGK-Compact.asc)  

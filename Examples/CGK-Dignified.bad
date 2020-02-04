@@ -1,38 +1,36 @@
 ' CHANGE GRAPH KIT
-' v1.6
+' v1.6.1
 ' Edit uncompressed graphics on MSX binary files on disk
 ' 
-' New
-'   Updated most subroutines to the new FUNC proto-function
-'	Replaced operators with the new +=, ++, etc where possible
-'   "|M|Kys" not showing anymore on Edit screen if on ML fallback
-'   Made DEFINEs for chr$ keys, keyboard scans and screen drawing
-'   Error handling improvements
-'   Small code adjustments, cleanup and optimizations
-'   Fixed bug with a wrong error number when a support file was not found
-'
-' Copyright (1984 - 2020) - Fred Rique (farique)
+' Copyright (C) 1984-2020 - Fred Rique (farique)
 ' https://github.com/farique1/Change-Graph-Kit
+'
+' New
+'   Fixed error lookup in machines with English language (or in MSX2?)
+'   Improved error reporting routine to output to the new MSX Badig Build Monitor Execution
+'   Improved ON STOP routine and added MSX Badig Build Monitor Execution reporting
+'   Adjusted background and border colors on quit to 4 instead of 5
 '
 ## MSX Basic Dignified version
 ## Convert to Classic MSX Basic with
 ## https://github.com/farique1/msx-basic-dignified 
-## Sublime Syntax highlight available at
+## Sublime syntax highlight and build system available at
 ## https://github.com/farique1/MSX-Sublime-Tools
 
 ## Sublime Build settings
 ## BB:export_path=diskbins/
-## BB:export_file=CGK-140.asc
+## BB:export_file=
 ## BB:convert_only=True
 ## BB:throttle=False
-##BB:arguments=-bc 1, -uo, -ar, -br, -sl, -vs 5  
+## BB:arguments=-gs 0, -ll 2, -cr, -tg t
 ## BB:override_machine=Philips_NMS_8250
 ## BB:override_extension=Microsol_Disk:SlotB
 
 declare colorB, color1, color2, color3, color4, color5, color6
 declare haltScan, isOverview, goOverview, keysPage, keysEdit
 
-define [right][chr$(&h1c)], [left][chr$(&h1d)], [up][chr$(&h1e)], [down][chr$(&h1f)], [enter][chr$(&h0d)]
+define [right][chr$(&h1c)], [left][chr$(&h1d)], [up][chr$(&h1e)], [down][chr$(&h1f)]
+define [enter][chr$(&h0d)], [beep][chr$(&h07)]
 define [pauseKEY][if inkey$<>[" "]then{@}], [pauseANY][if inkey$=""then{@}]
 
 clear 200,&hda00
@@ -81,7 +79,7 @@ goto {ml_setup}
 	[?@]8,9 "Using internal fall back"
 	restore {ml_routines}
 	for f = 0 to 146 :read a$ :[?@]18,15 147-f:poke MLs+f,val("&h"+a$) :next:[?@]18,15 "   "
-	~mlFallback = true
+	mlFallback = true
 
 {ml_setup}
 declare VRAMx, VRAMy, VRAMw, VRAMh
@@ -349,7 +347,7 @@ return
 			if a$ = "M" then keysPage = abs(keysPage - 1): goto {keys_page_start}
 			if a$ = "B" then [var0]&h20:[var1]&h03:[var2]&h00:[var3]&h04:[fill_VRAM]
 			if a$ = "N" then .window_requester() :close :restore {character_shapes} :goto {start}
-			if a$ = "P" then .window_requester() :close :clear :screen 0 :width 40 :color 15,5,5 :new
+			if a$ = "P" then .window_requester() :close :clear :screen 0 :width 40 :color 15,4,4 :new
 			if a$ = "K" then .save_config()
 			if a$ = "T" then .refresh_cursor_area()
 			if a$ = "L" then .load_config() :.set_color(,,,,,)
@@ -414,7 +412,7 @@ func .load_config()
 return
 
 func .refresh_cursor_area()
-	~finalPos = cursorPos + (cursorSize - 1) 'find formula to cap at gameLength to avoid next if
+	finalPos = cursorPos + (cursorSize - 1) 'find formula to cap at gameLength to avoid next if
 	if finalPos > gameLength - 1 then finalPos = gameLength - 1
 	for i = cursorPos to finalPos:
 		get #1,i+1:
@@ -454,7 +452,7 @@ func .update_memory_position(cursorDisplace=cursorDisplace, regionStart=regionSt
 	if regionStart + 799 > gameLength then regionStart = gameLength - 799
 	cursorPos = regionStart + cursorDisplace
 
-	~posIni = regionStart / (gameLength / 141) + 105
+	posIni = regionStart / (gameLength / 141) + 105
 	vpoke 6920,167 :vpoke 6921,posIni
 	vpoke 6928,167 :vpoke 6929,posIni+(141/(gameLength/800))
 
@@ -800,27 +798,27 @@ return
 	if err = 55 and errorType = 4 then _
 		errorType = 0 :configLoad = false:
 		configMessage$ = "CONFIG FILE CORRUPTED":
-		resume {config_failed}:
-		on error goto 0
+		resume {config_failed}
 	if err = 53 and errorType = 4 then _
 		errorType = 0 :configLoad = false:
 		configMessage$ = "CONFIG FILE NOT FOUND":
-		resume {config_failed}:
-		on error goto 0
+		resume {config_failed}
 	if err = 53 and errorType = 3 _
 		then errorType = 0:
-		resume {ml_fallback}:
-		on error goto 0
+		resume {ml_fallback}
 	if (err = 53 and errorType = 1) or err = 70 then goto {file_not_found}
 	~errorNum = err :if errorNum > 25 then errorNum -= 24
-	locate 0,21
-	for f = errorM(errorNum) to errorM(errorNum + 1):
-		print chr$(peek(&h3D75 + f));:
+	locate 0,20:print[enter]
+	for f = errorM(errorNum)+1 to errorM(errorNum + 1)-1:
+		print chr$(peek(&h3D75 + f));
 	next
-	print " at"; erl; "(";err;") "
+	print " (";right$(str$(err),len(str$(err))-1);") at"; erl; [beep]
 {stopped}
 	close
-	locate 0,22
+	stop off
+	on error goto 0
+	locate 0,20:print[enter]
+	print "Break";[beep]
 end
 
 {file_not_found}
@@ -830,7 +828,6 @@ end
 	errorType = 0
 	cls
 resume {insert_disk}
-on error goto 0
 
 {bad_file_name}
 	print:print
@@ -840,7 +837,6 @@ on error goto 0
 	[pauseKEY]
 	errorType = 0
 resume {insert_disk}
-on error goto 0
 
 ' Error Messages in ROM
 {portuguese_ROM}
@@ -852,7 +848,7 @@ data 429,444,459,475,501,520,531
 data 0,17,30,51,63,85,94,108,130,153,173
 data 190,205,219,239,255,282,297,321,338
 data 351,361,382,400,416,437,452,467,483
-data 498,516,531
+data 498,516,531,545,570,590,604
 
 ' ML Routines at 0xd000. ASM Source on GitHub
 {ml_routines}
