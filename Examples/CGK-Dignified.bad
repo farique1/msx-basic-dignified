@@ -1,37 +1,58 @@
-' CHANGE GRAPH KIT
-' v1.6.1
-' Edit uncompressed graphics on MSX binary files on disk
-' 
-' Copyright (C) 1984-2020 - Fred Rique (farique)
-' https://github.com/farique1/Change-Graph-Kit
-'
-' New
-'   Fixed error lookup in machines with English language (or in MSX2?)
-'   Improved error reporting routine to output to the new MSX Badig Build Monitor Execution
-'   Improved ON STOP routine and added MSX Badig Build Monitor Execution reporting
-'   Adjusted background and border colors on quit to 4 instead of 5
-'
-## MSX Basic Dignified version
-## Convert to Classic MSX Basic with
-## https://github.com/farique1/msx-basic-dignified 
-## Sublime syntax highlight and build system available at
-## https://github.com/farique1/MSX-Sublime-Tools
+'' 
+
+CHANGE GRAPH KIT
+v1.6.2
+Edit uncompressed graphics on MSX binary files on disk
+
+Copyright (C) 1984-2020 - Fred Rique (farique)
+https://github.com/farique1/Change-Graph-Kit
+
+New 29-02-2020
+	Updated some labels to the new Loop Labels.
+	Updated some REMs to REM Blocks
+	Enclosed aux routines in Line Toggles
+	Converted graphics to unicode analogues and changed file format encoding to UTF-8
+	Fixed Bug saving drawing 1 byte lower 
+
+New
+	Fixed error lookup in machines with English language (or in MSX2?)
+	Improved error reporting routine to output to the new MSX Badig Build Monitor Execution
+	Improved ON STOP routine and added MSX Badig Build Monitor Execution reporting
+	Adjusted background and border colors on quit to 4 instead of 5
+
+''
+###
+	MSX Basic Dignified version
+
+	Convert to Classic MSX Basic with
+	https://github.com/farique1/msx-basic-dignified
+
+	Sublime syntax highlight and build system available at
+	https://github.com/farique1/MSX-Sublime-Tools
+###
 
 ## Sublime Build settings
 ## BB:export_path=diskbins/
-## BB:export_file=
+##BB:export_file=CGKverb.asc
 ## BB:convert_only=True
-## BB:throttle=False
-## BB:arguments=-gs 0, -ll 2, -cr, -tg t
+## BB:throttle=True
 ## BB:override_machine=Philips_NMS_8250
 ## BB:override_extension=Microsol_Disk:SlotB
+## BB:arguments=-bc 1, -uo, -ar, -br, -sl, -vs 5,-tr
+##BB:arguments=-of a,-tr,-gs 1,-ll 0,-tg k,-lg b,-uo,-cs b,-sl
+
+keep #none
+#1 goto {aux1}
+#2 goto {aux2}
 
 declare colorB, color1, color2, color3, color4, color5, color6
 declare haltScan, isOverview, goOverview, keysPage, keysEdit
 
-define [right][chr$(&h1c)], [left][chr$(&h1d)], [up][chr$(&h1e)], [down][chr$(&h1f)]
+define [up][chr$(&h1e)], [right][chr$(&h1c)]
+define [down][chr$(&h1f)], [left][chr$(&h1d)]
 define [enter][chr$(&h0d)], [beep][chr$(&h07)]
-define [pauseKEY][if inkey$<>[" "]then{@}], [pauseANY][if inkey$=""then{@}]
+define [pauseKEY][if inkey$<>[" "]then{@}]
+define [pauseANY][if inkey$=""then{@}]
 
 clear 200,&hda00
 defint a-z :maxfiles = 2
@@ -47,10 +68,12 @@ screen 0 :color color2,color1,color1 :width 40 :key off
 
 [?@]14,11 "INITIALIZING"
 
-[?@]14,13 " MAKING STR "
-define [lin][left$(lin$,2*[1])]
-define [blk][left$(blk$,2*[1])]
-.createStrings()
+data {*&}
+
+## [?@]14,13 " MAKING STR "
+## define [lin][left$(lin$,2*[1])]
+## define [blk][left$(blk$,2*[1])]
+## .createStrings()' Not used anymore
 
 [?@]14,13 " ERROR MSGS "
 ' Using the time format in ROM to determine language
@@ -61,12 +84,12 @@ for f = 1 to 36: read a :errorM(f) = a :next
 .load_config()
 
 [?@]14,13 " ML SUPPORT "
-## Insert ML routines
-## Pass variables with pokes from MLs to MLs+7
-## USR args mem pos change if variable is integer, single, double, etc
-## scan area start=&h0400 length=&h0320
-## mini preview start=&h0040 lenght=&h0020
-## window request length=&h0060 VRAM=&h1940
+###	Insert ML routines
+	Pass variables with pokes from MLs to MLs+7
+	USR args mem pos change if variable is integer, single, double, etc
+	scan area start=&h0400 length=&h0320
+	mini preview start=&h0040 lenght=&h0020
+	window request length=&h0060 VRAM=&h1940 ###
 ~MLs = &hda00
 errorType = 3
 bload "CGKTools.com"
@@ -83,10 +106,14 @@ goto {ml_setup}
 
 {ml_setup}
 declare VRAMx, VRAMy, VRAMw, VRAMh
-define [var0][poke MLs+0,[0]], [var1][poke MLs+1,[0]], [var2][poke MLs+2,[0]], [var3][poke MLs+3,[0]]
-define [var4][poke MLs+4,[0]], [var5][poke MLs+5,[0]], [var6][poke MLs+6,[0]], [var7][poke MLs+7,[0]]
-define [invert_VRAM] [a=usr0(0)], [fill_VRAM] [a=usr1([0])], [copy_VRAM] [a=usr2([0])]
-define [populate_edit] [a=usr3(0)], [flip_VRAM] [a=usr4(0)], [rotate_VRAM] [a=usr5(0)], [slide_VRAM][a=usr6([0])]
+define [var0][poke MLs+0,[0]], [var1][poke MLs+1,[0]]
+define [var2][poke MLs+2,[0]], [var3][poke MLs+3,[0]]
+define [var4][poke MLs+4,[0]], [var5][poke MLs+5,[0]]
+define [var6][poke MLs+6,[0]], [var7][poke MLs+7,[0]]
+define [invert_VRAM] [a=usr0(0)], [fill_VRAM] [a=usr1([0])]
+define [copy_VRAM] [a=usr2([0])], [populate_edit] [a=usr3(0)]
+define [flip_VRAM] [a=usr4(0)], [rotate_VRAM] [a=usr5(0)]
+define [slide_VRAM][a=usr6([0])]
 defusr0 = MLs+&h08	' invert_VRAM 		v0=len
 defusr1 = MLs+&h0b	' fill_VRAM 		v0-v1=len v2-v3=srt usr(ptrn)
 defusr2 = MLs+&h0e	' copy_VRAM 		v0-v1=VRAM v2=width v3=height usr(direc)
@@ -132,7 +159,7 @@ memPos = x + 40 * y
 
 .show_content()
 
-{keys}
+keys{
 	a$=inkey$
 	[?@]x,y "{"
 	[?@]x,y "<"
@@ -148,7 +175,7 @@ memPos = x + 40 * y
 	if a$ = " " then {type_name}
 	[?@]x,y "<"
 	.show_content()
-goto {keys}
+}
 
 func .move_cursor_files(x=x, y=y)
 	if x >= 39 then x = 12
@@ -183,8 +210,8 @@ func .game_small()
 return
 
 func .createStrings()
-	~lin$ = "W":
-	~blk$ = "_"
+	~lin$ = "─":
+	~blk$ = "╂"
 	for f = 0 to 4:
 		lin$+=lin$:
 		blk$+=blk$:
@@ -229,6 +256,7 @@ return
 
 	if gameLength < 800 then close :.game_small() :goto {insert_disk}
 
+
 	[?@]10,13 "   SHAPES   "
 	## redefine characters and sprites
 	[?@]15,15 "06"
@@ -243,22 +271,21 @@ return
 
 	[?@]10,13 "   COLORS   "
 	.set_color(,,,,,)
-
 	{search_screen}
 		cls
-		[?@]0,0 "  CHANGE GRAPH KIT WW "+left$(gameName$,8)
-		[?@]1,2 "X"; [lin]10 ;"Y"
-		[?@]1,3 "V����������V"
-		[?@]1,4 "V����������V"
-		[?@]1,5 "V����������V"
-		[?@]1,6 "V����������V"
-		[?@]1,7 "V����������V"
-		[?@]1,8 "V����������V"
-		[?@]1,9 "V����������V"
-		[?@]1,10 "V����������V"
-		[?@]1,11 "V����������V"
-		[?@]1,12 "V����������V"
-		[?@]1,13 "Z"; [lin]10 ;"["
+		[?@]00,0 "  CHANGE GRAPH KIT ── "+left$(gameName$,8)
+		[?@]01,2 "┌──────────┐"
+		[?@]01,3 "│Çèö₧¿Ĩ◇▎◀ω│"
+		[?@]01,4 "│üïòƒ⌐ĩ‰▞⧗█│"
+		[?@]01,5 "│éîûá¬Õ¶▊⧓▄│"
+		[?@]01,6 "│âìùí½õ§▕▘▌│"
+		[?@]01,7 "│äÄÿó¼Ũ▂▉▗▐│"
+		[?@]01,8 "│àÅÖú¡ũ▚▨▝▀│"
+		[?@]01,9 "│åÉÜñ«Ĳ▆▧▖α│"
+		[?@]1,10 "│çæ¢Ñ»ĳ▔▼▒β│"
+		[?@]1,11 "│êÆ£ªÃ¾◾▲ΔΓ│"
+		[?@]1,12 "│ëô¥ºã∽▇▶ǂπ│"
+		[?@]1,13 "└──────────┘"
 		[?@]3,15 "Srt# End#"
 		[?@]1,17 "C"
 		[?@]3,17  string$(4-len(hex$(cursorPos)),"0")+hex$(cursorPos)
@@ -269,38 +296,37 @@ return
 		[?@]1,21 "G"
 		[?@]3,21  string$(4-len(hex$(0)),"0")+hex$(0)
 		[?@]8,21  string$(4-len(hex$(gameLength)),"0")+hex$(gameLength)
-		[?@]13,2 "X"; [lin]16 ;"Y"
-		[?@]13,3 "VCursor Stp #   "+right$(str$(spriteStep),1)+"V"
-		[?@]13,4 "VRegion Stp # "+right$(hex$(regionStep),3)+"V"
-		[?@]13,5 "Z"; [lin]16 ;"["
+		[?@]13,2 "┌────────────────┐"
+		[?@]13,3 "│Cursor Stp #    │":[?@]29,3 right$(str$(spriteStep),1)
+		[?@]13,4 "│Region Stp #    │":[?@]27,4 right$(hex$(regionStep),3)
+		[?@]13,5 "└────────────────┘"
 
 		{keys_page_start}
 			on keysPage goto {keys_page_2}
-			[?@]13,7  "V�VMove V�VEdit   "
-			[?@]13,9  "V�VStep VDVSize   "
-			[?@]13,11 "VBVClearVRVRefresh"
-			[?@]13,13 "VTVScan und cursor "
-			[?@]13,15 "VFVFreeze/Unfreeze"
-			[?@]13,17 "VEVExplode/Ovrview"
+			[?@]13,7  "│Ω│Move │Φ│Edit   "
+			[?@]13,9  "│θ│Step │D│Size   "
+			[?@]13,11 "│B│Clear│R│Refresh"
+			[?@]13,13 "│T│Scan und cursor "
+			[?@]13,15 "│F│Freeze/Unfreeze"
+			[?@]13,17 "│E│Explode/Ovrview"
 			[?@]13,19 "                  "
 		goto {keys_page_end}
 
 		{keys_page_2}
-			[?@]13,7  "VNVNew  VPVExit  "
-			[?@]13,9  "VQVPrev VWVNext   "
-			[?@]13,11 "VAVP 4x VSVN 4x   "
-			[?@]13,13 "VZVSrtVXVMidVCVEnd"
-			[?@]13,15 "VK LVCfg Save Load"
-			[?@]13,17 "V1-8VChange Colors"
+			[?@]13,7  "│N│New  │P│Exit  "
+			[?@]13,9  "│Q│Prev │W│Next   "
+			[?@]13,11 "│A│P 4x │S│N 4x   "
+			[?@]13,13 "│Z│Srt│X│Mid│C│End"
+			[?@]13,15 "│K L│Cfg Save Load"
+			[?@]13,17 "│1-8│Change Colors"
 			[?@]13,19 "                  "
 
 		{keys_page_end}
-		[?@]13,19 "      VMVMore Keys"
-		[?@]13,21 "ABBBBBBBB_
-				   BBBBBBBBC"
+		[?@]13,19 "      │M│More Keys"
+		[?@]13,21 "☺☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻☻♥"
 
 		.end_scan()
-		if isOverview = true then [?@]2,13 "WOverviewW"
+		if isOverview = true then [?@]2,13 "─Overview─"
 
 		~adjustY = cursorY + (cursorSize - 2):
 		~adjustX = 0
@@ -315,7 +341,7 @@ return
 
 		if goOverview then goOverview = false : .update_memory_position(,)
 
-		{read_keyboard_main}
+		read_keyboard_main{
 			a$ = inkey$
 
 			if a$ = [right] and (cursorX + 8 < 95) and (cursorPos + cursorSize-2 + 80 < gameLength) _
@@ -352,7 +378,7 @@ return
 			if a$ = "T" then .refresh_cursor_area()
 			if a$ = "L" then .load_config() :.set_color(,,,,,)
 
-			if a$ = "Q" then .update_memory_position(cursorPos - regionStart, regionStart - regionStep)
+			if a$ = "Q" then .update_memory_position(cursorPos - regionStart, (regionStart - regionStep))
 			if a$ = "W" then .update_memory_position(cursorPos - regionStart, regionStart + regionStep)
 			if a$ = "A" then .update_memory_position(cursorPos - regionStart, regionStart - regionStep * 4)
 			if a$ = "S" then .update_memory_position(cursorPos - regionStart, regionStart + regionStep * 4)
@@ -369,23 +395,22 @@ return
 					.scan()
 				endif
 			endif
-
-		goto {read_keyboard_main}
+		}
 
 func .set_color(color1=color1, color2=color2, color3=color3, color4=color4, color5=color5, color6=color6)
-	color1 = fn colorB(color1)
-	color2 = fn colorB(color2)
-	color3 = fn colorB(color3)
-	color4 = fn colorB(color4)
-	color5 = fn colorB(color5)
+	color1 = fn colorB(color1):
+	color2 = fn colorB(color2):
+	color3 = fn colorB(color3):
+	color4 = fn colorB(color4):
+	color5 = fn colorB(color5):
 	color6 = fn colorB(color6)
 
 	color color2,color1,color1
-	vpoke 8194,color4 * 16 + color1								## Border character colors, blocks of 8 chars
-	vpoke 8195,color4 * 16 + color1								## Border character colors, blocks of 8 chars
-	vpoke 8192,color4 * 16 + color3 							## Lower bar character colors, blocks of 8 chars
-	vpoke 8193,color3 * 16 + color1								## Mini preview colors, blocks of 8 chars
-	vpoke 6915,color2 :vpoke 6919,color2						## Sprite colors
+	vpoke 8194,color4 * 16 + color1:							## Border character colors, blocks of 8 chars
+	vpoke 8195,color4 * 16 + color1:							## Border character colors, blocks of 8 chars
+	vpoke 8192,color4 * 16 + color3: 							## Lower bar character colors, blocks of 8 chars
+	vpoke 8193,color3 * 16 + color1:							## Mini preview colors, blocks of 8 chars
+	vpoke 6915,color2 :vpoke 6919,color2:						## Sprite colors
 	vpoke 6923,color2 :vpoke 6927,color2 :vpoke 6931,color2		## Sprite colors
 	for f = 0 to 12 :vpoke 8208+f,color3 * 16 + color1 :next	## Scan area character colors, blocks of 8 chars
 return
@@ -393,9 +418,9 @@ return
 func .save_config()
 	.vram_conversion(12, 10, 8, 2)
 	[var0]VRAMx:[var1]VRAMy:[var2]VRAMw:[var3]VRAMh:[copy_VRAM]0
-	[?@]12,10 "X"; [lin]6 ;"Y"
-	[?@]12,11 "VSAVINGV"
-	[?@]12,12 "Z"; [lin]6 ;"[
+	[?@]12,10 "┌──────┐"
+	[?@]12,11 "│SAVING│"
+	[?@]12,12 "└──────┘"
 
 	open "CGKConf.cfg" for output as #2
 	print #2,color1,color2,color3,color4,color5,color6
@@ -470,8 +495,8 @@ return
 
 func .scan()
 	isOverview = false
-	[?@]2,2 [lin]3 ;"SCAN"; [lin]3
-	[?@]2,13 "WV�VStopWW"
+	[?@]2,02 "───SCAN───"
+	[?@]2,13 "─│θ│Stop──"
 
 	for f = regionStart to regionStart + 799
 		vpoke 1024 - regionStart + f,vpeek(1024 - regionStart + f) xor 255:
@@ -484,11 +509,11 @@ return
 
 func .end_scan()
 	if haltScan then _
-		[?@]2,2 "WWFREEZEWW" _
+		[?@]2,2 "──FREEZE──" _
 	else _
-		[?@]2,2 [lin]10
+		[?@]2,2 "──────────"
 	endif
-	[?@]2,13 [lin]10
+	[?@]2,13 "──────────"
 return
 
 func .change_movement_step()
@@ -502,65 +527,65 @@ return
 	cls
 	vpoke 6920,200 :vpoke 6928,200
 	[var0]&h20:[var1]&h00:[var2]&h40:[var3]&h00:[fill_VRAM] ## Clear mini preview
-	[?@]0,0  "  CHANGE GRAPH KIT WW "+left$(gameName$,8)
-	[?@]1,2 "X"; [lin]10 ;"Y"
-	[?@]1,3 "V����������V"
-	[?@]1,4 "V����������V"
-	[?@]1,5 "V����������V"
-	[?@]1,6 "V����������V"
-	[?@]1,7 "V����������V"
-	[?@]1,8 "V����������V"
-	[?@]1,9 "V����������V"
-	[?@]1,10 "V����������V"
-	[?@]1,11 "V����������V"
-	[?@]1,12 "V����������V"
-	[?@]1,13 "Z"; [lin]10 ;"["
-	[?@]1,14 "X"; [lin]2 ;"R"; [lin]4 ;"R"; [lin]2 ;"Y"
-	[?@]1,15 "VHJV    VLNV"
-	[?@]1,16 "VIKV    VMOV"
-	[?@]1,17 "Z"; [lin]2 ;"Q"; [lin]4 ;"Q"; [lin]2 ;"["
+	[?@]00,0 "  CHANGE GRAPH KIT ── "+left$(gameName$,8)
+	[?@]01,2 "┌──────────┐"
+	[?@]01,3 "│Çèö₧¿Ĩ◇▎◀ω│"
+	[?@]01,4 "│üïòƒ⌐ĩ‰▞⧗█│"
+	[?@]01,5 "│éîûá¬Õ¶▊⧓▄│"
+	[?@]01,6 "│âìùí½õ§▕▘▌│"
+	[?@]01,7 "│äÄÿó¼Ũ▂▉▗▐│"
+	[?@]01,8 "│àÅÖú¡ũ▚▨▝▀│"
+	[?@]01,9 "│åÉÜñ«Ĳ▆▧▖α│"
+	[?@]1,10 "│çæ¢Ñ»ĳ▔▼▒β│"
+	[?@]1,11 "│êÆ£ªÃ¾◾▲ΔΓ│"
+	[?@]1,12 "│ëô¥ºã∽▇▶ǂπ│"
+	[?@]1,13 "└──────────┘"
+	[?@]1,14 "┌──┐    ┌──┐"
+	[?@]1,15 "│◘◙│    │♀♬│"
+	[?@]1,16 "│○♂│    │♪☼│"
+	[?@]1,17 "└──┘    └──┘"
 	[?@]5,15 string$(4-len(hex$(cursorPos)),"0")+hex$(cursorPos)
 	[?@]5,16 string$(4-len(hex$(cursorPos + ( cursorSize - 1))),"0")+hex$(cursorPos + ( cursorSize - 1))
-	[?@]14,2 [blk]16
-	[?@]14,3 [blk]16
-	[?@]14,4 [blk]16
-	[?@]14,5 [blk]16
-	[?@]14,6 [blk]16
-	[?@]14,7 [blk]16
-	[?@]14,8 [blk]16
-	[?@]14,9 [blk]16
-	[?@]14,10 [blk]16
-	[?@]14,11 [blk]16
-	[?@]14,12 [blk]16
-	[?@]14,13 [blk]16
-	[?@]14,14 [blk]16
-	[?@]14,15 [blk]16
-	[?@]14,16 [blk]16
-	[?@]14,17 [blk]16
+	[?@]14,02 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,03 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,04 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,05 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,06 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,07 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,08 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,09 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,10 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,11 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,12 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,13 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,14 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,15 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,16 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
+	[?@]14,17 "╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂╂"
 	vpoke 6924,15 :vpoke 6925,112
 
 	{keys_edit_start}
 		if mlFallback then keysEdit = 0
 		on keysEdit goto {keys_edit_2}
-		[?@]01,19 "VCVCpyVVVPst"
-		[?@]07,21 "V#VCor"
-		if not mlFallback then [?@]01,21 "VMVKys"
+		[?@]01,19 "│C│Cpy│V│Pst"
+		[?@]07,21 "│#│Cor"
+		if not mlFallback then [?@]01,21 "│M│Kys"
 	goto {keys_edit_end}
 
 	{keys_edit_2}
-		[?@]01,19 "VRVRotVTVHmv"
-		[?@]01,21 "VFVFlpVGVVmv"
+		[?@]01,19 "│R│Rot│T│Hmv"
+		[?@]01,21 "│F│Flp│G│Vmv"
 
 	{keys_edit_end}
-	[?@]13,19 "VEVErzV�VTglVLVRld"
-	[?@]13,21 "VDVInvVSVSavV�VBck"
+	[?@]13,19 "│E│Erz│θ│Tgl│L│Rld"
+	[?@]13,21 "│D│Inv│S│Sav│Φ│Bck"
 
 	if ~editType >= 0 then editType = 0	:~editX = 0 :~editY = 0:
 		.fill_edit_area()
 
 	editType = 0
 
-	{read_keyboard_edit}
+	read_keyboard_edit{
 		a$ = inkey$
 
 		if a$ = [right] and editX < areaSize then editX ++ :vpoke 6925,112 + (editX * 8)
@@ -590,8 +615,7 @@ return
 		if a$ = "4" then .set_minipreview_color(,color6 + 1)
 
 		if a$ = [enter] then vpoke 6924,200 :goto {search_screen}
-
-	goto {read_keyboard_edit}
+	}
 
 func .fill_edit_area(editType=editType)
 	declare areaSize, finalPos, prevLen, editLin, editCol
@@ -650,7 +674,7 @@ func .save_drawing()
 		vpoke scanPos,vpeek(scanPos) xor 255
 
 		a$ = chr$(previewByte)
-		lset bytes$ = a$ :put #1,i
+		lset bytes$ = a$ :put #1,i+1
 
 		vpoke scanPos,previewByte
 	next
@@ -658,37 +682,37 @@ return
 
 {explode_screen}
 	cls
-	[?@]0,0 "  CHANGE GRAPH KIT WW "+left$(gameName$,8)
-	[?@]1,2 "X"; [lin]19 ;"Y"
-	[?@]1,3 "V� � � � � � � � � �V"
-	[?@]1,4 "V                   V"
-	[?@]1,5 "V� � � � � � � � � �V"
-	[?@]1,6 "V                   V"
-	[?@]1,7 "V� � � � � � � � � �V"
-	[?@]1,8 "V                   V"
-	[?@]1,9 "V� � � � � � � � � �V"
-	[?@]1,10 "V                   V"
-	[?@]1,11 "V� � � � � � � � � �V"
-	[?@]1,12 "V                   V"
-	[?@]1,13 "V� � � � � � � � � �V"
-	[?@]1,14 "V                   V"
-	[?@]1,15 "V� � � � � � � � � �V"
-	[?@]1,16 "V                   V"
-	[?@]1,17 "V� � � � � � � � � �V"
-	[?@]1,18 "V                   V"
-	[?@]1,19 "V� � � � � � � � � �V"
-	[?@]1,20 "V                   V"
-	[?@]1,21 "V� � � � � � � � � �V"
-	[?@]1,22 "Z"; [lin]19 ;"["
-	[?@]23,03 "VOV Ovrw"
-	[?@]23,21 "VEV Back"
+	[?@]00,0 "  CHANGE GRAPH KIT ── "+left$(gameName$,8)
+	[?@]01,2 "┌───────────────────┐"
+	[?@]01,3 "│Ç è ö ₧ ¿ Ĩ ◇ ▎ ◀ ω│"
+	[?@]01,4 "│                   │"
+	[?@]01,5 "│ü ï ò ƒ ⌐ ĩ ‰ ▞ ⧗ █│"
+	[?@]01,6 "│                   │"
+	[?@]01,7 "│é î û á ¬ Õ ¶ ▊ ⧓ ▄│"
+	[?@]01,8 "│                   │"
+	[?@]01,9 "│â ì ù í ½ õ § ▕ ▘ ▌│"
+	[?@]1,10 "│                   │"
+	[?@]1,11 "│ä Ä ÿ ó ¼ Ũ ▂ ▉ ▗ ▐│"
+	[?@]1,12 "│                   │"
+	[?@]1,13 "│à Å Ö ú ¡ ũ ▚ ▨ ▝ ▀│"
+	[?@]1,14 "│                   │"
+	[?@]1,15 "│å É Ü ñ « Ĳ ▆ ▧ ▖ α│"
+	[?@]1,16 "│                   │"
+	[?@]1,17 "│ç æ ¢ Ñ » ĳ ▔ ▼ ▒ β│"
+	[?@]1,18 "│                   │"
+	[?@]1,19 "│ê Æ £ ª Ã ¾ ◾ ▲ Δ Γ│"
+	[?@]1,20 "│                   │"
+	[?@]1,21 "│ë ô ¥ º ã ∽ ▇ ▶ ǂ π│"
+	[?@]1,22 "└───────────────────┘"
+	[?@]23,03 "│O│ Ovrw"
+	[?@]23,21 "│E│ Back"
 	vpoke 6912,200:vpoke 6916,200
 	vpoke 6920,200:vpoke 6928,200
 
 	if isOverview then .end_overview()
 
-	declare ovrwX, ovrwY, bytePos, sliceSize, lastSlice, ovrwRegion
-	{explode_keys}
+	explode_keys{
+		declare ovrwX, ovrwY, bytePos, sliceSize, lastSlice, ovrwRegion
 		a$=inkey$
 		if a$ = "O" then .overview()
 
@@ -715,8 +739,7 @@ return
 		endif
 
 		if a$ = "E" then goto {search_screen}
-
-	goto {explode_keys}
+	}
 
 func .move_overview_sprite(ovrwX=ovrwX, ovrwY=ovrwY)
 	vpoke 6912,(ovrwY + 1) * 16 + 6  :vpoke 6913,(ovrwX + 1) * 16 
@@ -733,8 +756,8 @@ func .overview()
 	sliceSize = (gameLength / 100)
 	lastSlice = (9 * sliceSize) + (9 * (sliceSize * 10)) + 8
 
-	[?@]2,2 [lin]7 ;"SCAN"; [lin]8
-	[?@]2,22 [lin]5 ;"V�VStop"; [lin]7
+	[?@]2,02 "───────SCAN────────"
+	[?@]2,22 "──────│θ│Stop──────"
 
 	for f = 1 to lastSlice step sliceSize
 		for i = f to f + 7
@@ -753,8 +776,8 @@ func .end_overview()
 	vpoke 6912,(ovrwY + 1) * 16 + 6  :vpoke 6913,(ovrwX + 1) * 16 
 	vpoke 6916,(ovrwY + 1) * 16 + 14 :vpoke 6917,(ovrwX + 1) * 16
 
-	[?@]23,05 "V�V Move"
-	[?@]23,07 "V�V Go"
+	[?@]23,05 "│Ω│ Move"
+	[?@]23,07 "│Φ│ Go"
 	[?@]23,11 "Region"
 
 	ovrwRegion = (ovrwY * sliceSize) + (ovrwX * (sliceSize * 10))
@@ -762,16 +785,16 @@ func .end_overview()
 	[?@]23,13 "St# " + string$(4-len(hex$(ovrwRegion)),"0")+hex$(ovrwRegion)
 	[?@]23,15 "Ed# " + string$(4-len(hex$(ovrwRegion + 799)),"0")+hex$(ovrwRegion + 799)
 
-	[?@]02,2 [lin]19
-	[?@]2,22 [lin]19
+	[?@]02,2 "───────────────────"
+	[?@]2,22 "───────────────────"
 return
 
 func .window_requester()
 	.vram_conversion(5, 10, 21, 2)
 	[var0]VRAMx:[var1]VRAMy:[var2]VRAMw:[var3]VRAMh:[copy_VRAM]0
-	[?@]5,10 "X"; [lin]19 ;"Y"
-	[?@]5,11 "VAre you sure? (Y/N)V"
-	[?@]5,12 "Z"; [lin]19 ;"[
+	[?@]5,10 "┌───────────────────┐"
+	[?@]5,11 "│Are you sure? (Y/N)│"
+	[?@]5,12 "└───────────────────┘"
 	a$ = inkey$: if a$ <> "Y" and a$ <> "N" then {@}
 	if a$ = "N" then [var0]VRAMx:[var1]VRAMy:[var2]VRAMw:[var3]VRAMh:[copy_VRAM]1 :return {read_keyboard_main}
 return 
@@ -881,22 +904,30 @@ data 129,255,0,0,0,0,0,0
 data 0,128,128,128,128,128,128,0
 data 255,129,129,129,129,129,129,255
 
-' Functions Not Used
+#1
+{aux1}
 ' Create Character Block
 c=127
 for x=2 to 11
 	for y=3 to 12
 		c++
-		:[?@]x,y:print chr$(c)
+		:[?@]x,y chr$(c)
 	next
 next
 end
+#1
+#2
+{aux2}
 ' Character Map
+screen 1:width 32:key off
 for i=0 to 255
 	x=i mod 32: y=i\32
 	c=i
 	if c<32 or c=127 then c=32
 	[?@]x,y chr$(c)
-	[?@]x,y+10 chr$(1)+chr$(c)
+	if c>64 and c<96 then _ 
+		[?@]x,y+7 chr$(1)+chr$(c)
 next
+locate 0,y+4
 end
+#2

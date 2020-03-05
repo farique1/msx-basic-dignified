@@ -1,5 +1,41 @@
-  
 # MSX Basic Dignified  
+  
+## **v1.5.0**  
+***4-3-2020***  
+- Ported to Python 3.8!  
+- No more forcing an 8 character file name for output (we are all adults here and understand the limitations of the MSX disk system.)  
+- Added **Loop Labels**.  
+- Added **Line Toggles**.  
+- Added **Rem Blocks** with `''` and `###`.  
+- Added `-tr` and `translate=` to **translate unicode special characters** to a MSX ASCII similar.  
+- Added `-rh` and `rem_header=` to remove the two info REM header lines on  
+- Added the possibility of DEFINEs as a variables to other DEFINEs.  
+	- Re coded and streamlined the entire DEFINE replacement routine.  
+the converted code.  
+- Added linefeed to last line of code to force parsing it.  
+- Changed the standing characters for the DATA, REM, QUOTES and LABELS placeholders to way above the usual ASCII range of the old computers to prevent misinterpretation.  
+- Changed colon spaces to preserve spacing if keep spacing is used  
+- Changed defaults to provide a more compact code.  
+	- General spacing default now is 0 spaces.  
+	- Label line default is now `2` (no REM labels.).  
+	- Strip the GOTOs after THEN/ELSE is now the default.  
+- Changed `-fb` to `-frb` to standardize the nomenclature (3 letters are for internal arguments).  
+- Integrated colon spacing arguments `-bc`, `-ac`, `nnbr_spaces_bef_colon=` and `nnbr_spaces_aft_colon=` into `-cs` and `colon_spaces=` that takes `b`, `a` and `ba` for *before*, *after* and *before and after*.  
+- Integrated label line spacing arguments `-br`, `-ar`, `rem_bef_label` and `rem_aft_label` into `-lg` and `label_gap=` that takes `b`, `a`, `ba` for *before*, *after* and *before and after*.  
+- Integrated spacing arguments `-ks` and `keep_original_spaces=` into `-gs` and `general_spaces=` that now takes `0`, `1` and `k` for *no space*, *one space* and *keep original spacing* (there is no more option for more the 1 general space.)  
+- Integrated indent arguments `-ci`, `-si`, `keep_indent_space_chars=` and `indent_tab_spaces=` into `-ki` and `keep_indent=` and made it take the number of TAB spaces.  
+- Integrated REM format arguments `-lr`, `-rr`, `label_rem_format=` and `regul_rem_format=` into `-nr` and `new_rem_format=` (there is no more distinction between label and regular REMs.)  
+- Improved verbose output  
+	- Optimised a little.  
+	- Standardised the arguments help text.  
+	- Added reporting of [?@] arguments on detailed verbose.  
+	- Comments after a label without `'` generates a warning.  
+	- Undefined DEFINEs demoted to *warning* from *error* (while bug picking `[...]` constructs inside DATA, REM and QUOTES is not fixed.  
+	- `-vb 0` now quit silently on errors.  
+- Fixed a bug with parentheses on function call variables and improved the underlying code.  
+- Fixed a potential small bug with spaces before colon.  
+- Fixed small bug converting existing REMs.  
+- Fixed potential small bug removing line numbers.  
   
 ## **v1.4.0**  
 ***30-1-2020***  
