@@ -1,3 +1,4 @@
+
   
 <img src="https://github.com/farique1/msx-basic-dignified/blob/master/Images/GitHub_Badig_Logo-02.png" alt="MSX Basic Dignified" width="290" height="130">  
   
@@ -7,6 +8,8 @@
 **MSX Basic Dignified** is a 'dialect' of MSX Basic using modern coding style and standards that can be composed on any text editor and converted to the traditional MSX Basic to be executed.  
   
 Dignified Basic can be written **without line numbers**, can be **indented** using TABs or spaces and have **broken lines**, can use variables with **long names**, have macros **defined** and external files **included**, has a kind of **function** construct, can use **unicode special characters** analogues to the MSX ASCII ones, as well as **line toggles**, **true** and **false** statements, **compound arithmetic** operators and more.  
+  
+>To convert FROM the Classic Basic TO the Dignified format see [**MSX Basic DignifieR**](DignifieR.md).  
   
 >I felt the need for something like this when I was redoing [**Change Graph Kit**](https://github.com/farique1/Change-Graph-Kit), an MSX program I did back in the day, just to see how much I could improve it. I coded on Sublime and used Excel, REM tags on branching instructions and a lot of patience to add and change line numbers and such, not pretty.  
 >Long after the **CGK** episode I discovered [Tabmegx](http://ni.x0.com/msx/tabmegx/) and also found [Inliner](https://giovannireisnunes.wordpress.com/meu-software/inliner/) ([GitHub](https://github.com/plainspooky/inliner)) during research for **MBD**, ([NestorPreTer](https://github.com/Konamiman/NestorPreTer) is yet another similar tool I found later). They were great sources of 'inspiration' but I wanted something even closer to the workflow I had been working on with other languages.  
@@ -551,7 +554,7 @@ ini: `verbose_level = [#]`  arg: `-vb <#>`  Default: `3`
   
 - *Supress info comments*  
 Do not add information about **MSX Basic Dignified** at the top of the converted code.  
-ini: `rem_header = [true,false]`  arg: `-nr`  Default: `false`  
+ini: `rem_header = [true,false]`  arg: `-rh`  Default: `false`  
   
 - *Running from build system*  
 On build systems, like the one in Sublime, errrors and warning messages demand the file name to be on the offending log line. To declutter the log on a run from a console window this information is omitted unless told so.  
