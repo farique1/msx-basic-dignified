@@ -37,5 +37,5 @@ Insert a blank line before line labels.
 arg: `-lt` Default: `True`  
   
 - *Print at toggle*  
-Convert `locate x,y:print` to `[?@]x,y `.
+Convert `locate x,y:print` to `[?@]x,y `.  
 arg: `-pt` Default: `False`  
