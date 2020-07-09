@@ -12,11 +12,88 @@ import re
 import os.path
 import argparse
 
-file_load = ''      # Source file
+instr = ['AND', 'AS', 'BASE', 'BEEP', 'BLOAD', 'BSAVE', 'CALL', 'CIRCLE',
+         'CLEAR', 'CLOAD', 'CLOSE', 'CLS', 'CMD', 'COLOR', 'CONT', 'COPY',
+         'CSAVE', 'CSRLIN', 'DATA', 'DEF', 'DEFDBL', 'DEFINT', 'DEFSNG',
+         'DEFSTR', 'DIM', 'DRAW', 'DSKI', 'END', 'EQV', 'ERASE', 'ERR',
+         'ERROR', 'FIELD', 'FILES', 'FN', 'FOR', 'GET', 'IF', 'IMP', 'IPL',
+         'KILL', 'LET', 'LFILES', 'LINE', 'LOAD', 'LOCATE', 'LPRINT', 'LSET',
+         'MAX', 'MERGE', 'MOD', 'MOTOR', 'NAME', 'NEW', 'NEXT', 'NOT', 'OFF',
+         'ON', 'OPEN', 'OR', 'OUT', 'PAINT', 'POINT', 'POKE', 'PRESET', 'PRINT',
+         'PSET', 'PUT', 'READ', 'REM', 'RSET', 'SAVE', 'SCREEN', 'SET', 'SOUND',
+         'STEP', 'STOP', 'SWAP', 'TIME', 'TO', 'TROFF', 'TRON', 'USING',
+         'VPOKE', 'WAIT', 'WIDTH', 'XOR', "'"]
+
+funct = ['ABS', 'ASC', 'ATN', r'ATTR\$', r'BIN\$', 'CDBL', r'CHR\$', 'CINT',
+         'COS', 'CSNG', 'CVD', 'CVI', 'CVS', 'DSKF', r'DSKO\$', 'EOF', 'EXP',
+         'FIX', 'FPOS', 'FRE', r'HEX\$', r'INKEY\$', 'INP', r'INPUT\$', 'INSTR',
+         'INT', 'KEY', r'LEFT\$', 'LEN', 'LOC', 'LOF', 'LOG', 'LPOS', r'MID\$',
+         r'MKD\$', r'MKI\$', r'MKS\$', r'OCT\$', 'PAD', 'PDL', 'PEEK', 'PLAY',
+         'POS', r'RIGHT\$', 'RND', 'SGN', 'SIN', r'SPACE\$', 'SPC', r'SPRITE\$',
+         'SPRITE', 'SQR', 'STICK', r'STR\$', 'STRIG', r'STRING\$', 'TAB',
+         'TAN', 'USR', 'VAL', 'VARPTR', 'VDP', 'VPEEK']
+
+branc = ['AUTO', 'DELETE', 'ELSE', 'ERL', 'GOSUB', 'GOTO', 'LIST', 'LLIST',
+         'RENUM', 'RESTORE', 'RESUME', 'RETURN', 'RUN', 'THEN']
+
+
+def show_log(line_number, text, level, **kwargs):
+    bullets = ['', '*** ', '  * ', '--- ', '  - ', '    ']
+
+    try:
+        bullet = kwargs['bullet']
+    except KeyError:
+        bullet = level
+
+    display_file_name = ''
+    line_number = '(' + str(line_number) + '): ' if line_number != '' else ''
+
+    if verbose_level >= level:
+        print(bullets[bullet] + display_file_name + line_number + text)
+
+    if bullet == 1:
+        print('    Execution_stoped')
+        print()
+        raise SystemExit(0)
+
+
+def load_file(file_load):
+    classic_code = []
+    if file_load:
+        try:
+            with open(file_load, 'r', encoding='latin1') as f:
+                for line in f:
+                    classic_code.append(line.strip() + '\n')
+            return classic_code
+        except IOError:
+            show_log('', ' '.join(['Source_not_found', file_load]), 1)  # Exit
+    else:
+        show_log('', 'Source_not_given', 1)  # Exit
+
+
+def check_space(char, patt):
+    esc_match = match.upper().replace('$', r'\$')
+    if g.lastgroup == 'key' and esc_match in funct:
+        patt = patt.replace('(', '')
+    space = ''
+    if re.match(patt, char):
+        space = ' '
+    return space
+
+
+def force_space(match):
+    if re.match(spacesbef, match.strip()):
+        match = ' ' + match
+    if re.match(spacesaft, match.strip()):
+        match = match + ' '
+    return match
+
+
+file_load = 'BasicTests/testDFR.asc'    # Source file
 file_save = ''      # Destination file
 ident_tgl = True    # Add indent to non label lines
 lline_tgl = True    # Add blank line before labels
-print_tgl = False    # Convert locate:print to [?@]
+print_tgl = True    # Convert locate:print to [?@]
 verbose_level = 2   # Show processing status: 0-silent 1-+erros 2-+warnings 3-+steps 4-+details
 
 # Set command line (if used overwrites previous settings)
@@ -51,87 +128,48 @@ lline_tgl = args.lt
 print_tgl = args.pt
 verbose_level = args.vb
 
-keywords = ['STRING', 'RESTORE', 'SPACE', 'RIGHT', 'VARPTR', 'DELETE', 'DEFSNG',
-            'DEFSTR', 'DEFINT', 'DEFDBL', 'LPRINT', 'CSRLIN', 'LOCATE', 'SPRITE',
-            'LFILES', 'CIRCLE', 'SCREEN', 'RETURN', 'INKEY', 'RESUME', 'PRESET',
-            'VPEEK', 'STRIG', 'STICK', 'LEFT', 'ERASE', 'WIDTH', 'VPOKE', 'DSKO',
-            'DSKI', 'MOTOR', 'USING', 'TROFF', 'MERGE', 'CSAVE', 'LLIST', 'COLOR',
-            'CLOSE', 'SOUND', 'CLOAD', 'CLEAR', 'INSTR', 'BSAVE', 'INPUT', 'BLOAD',
-            'RENUM', 'ATTR', 'GOSUB', 'PRINT', 'POINT', 'FILES', 'FIELD', 'ERROR',
-            'PAINT', 'ELSE', 'OCT', 'DSKF', 'MKS', 'MKI', 'MKD', 'MID', 'LPOS',
-            'CSNG', 'STR', 'CINT', 'CHR', 'CDBL', 'BIN', 'HEX', 'FPOS', 'PEEK',
-            'OPEN', 'WAIT', 'NEXT', 'DRAW', 'NAME', 'TRON', 'TIME', 'THEN', 'DATA',
-            'LSET', 'SWAP', 'STOP', 'COPY', 'STEP', 'LOAD', 'CONT', 'LIST', 'LINE',
-            'KILL', 'SAVE', 'CALL', 'RSET', 'BEEP', 'BASE', 'AUTO', 'GOTO', 'READ',
-            'PSET', 'POKE', 'PLAY', 'PAD', 'EOF', 'VAL', 'TAN', 'CVS', 'CVI', 'CVD',
-            'LOG', 'LOF', 'COS', 'LOC', 'SQR', 'SIN', 'LEN', 'SGN', 'INT', 'RND',
-            'INP', 'ATN', 'ASC', 'FRE', 'ABS', 'POS', 'FIX', 'EXP', 'PDL', 'REM',
-            'ERL', 'OUT', 'EQV', 'XOR', 'END', 'OFF', 'NOT', 'VDP', 'NEW', 'DIM',
-            'USR', 'MOD', 'DEF', 'MAX', 'TAB', 'CMD', 'SPC', 'CLS', 'LET', 'SET',
-            'KEY', 'IPL', 'RUN', 'IMP', 'PUT', 'GET', 'AND', 'FOR', 'ERR', 'AS',
-            'OR', 'ON', 'TO', 'IF', 'FN']
+keywords = instr + funct + branc
+keywords.sort(key=len, reverse=True)
 
-branching = ['RESTORE', 'AUTO', 'RENUM', 'DELETE', 'RESUME', 'ERL', 'ELSE',
-             'RUN', 'LIST', 'LLIST', 'GOTO', 'RETURN', 'THEN', 'GOSUB']
-
-
-def show_log(line_number, text, level, **kwargs):
-    bullets = ['', '*** ', '  * ', '--- ', '  - ', '    ']
-
-    try:
-        bullet = kwargs['bullet']
-    except KeyError:
-        bullet = level
-
-    display_file_name = ''
-
-    line_number = '(' + str(line_number) + '): ' if line_number != '' else ''
-
-    if verbose_level >= level:
-        print(bullets[bullet] + display_file_name + line_number + text)
-
-    if bullet == 1:
-        print('    Execution_stoped')
-        print()
-        raise SystemExit(0)
-
-
-show_log('', 'Loading file', 3)
-classic_code = []
-if file_load:
-    show_log('', ' '.join(['Load_file:', file_load]), 4)
-    try:
-        with open(file_load, 'r', encoding='latin1') as f:
-            for line in f:
-                classic_code.append(line.strip())
-    except IOError:
-        show_log('', ' '.join(['Source_not_found', file_load]), 1)  # Exit
-else:
-    show_log('', 'Source_not_given', 1)  # Exit
-
-
+keyw_list = '|'.join(keywords)
 elements = (r'(?:'
-            r'(?P<num>[0-9]+)'
-            r"|(?P<rem>(?:REM|').*)"
-            r'|(?P<dat>(?:DATA).*?(?=\:|$))'
             r'%s'
-            r'|(?P<key>' + r'|'.join(keywords) + r')'
-            r'|(?P<str>"(?:[^"]*)(?:"|$))'
+            r'|(?P<flo>\d*\.(\d+[EDed][+-]\d+|\d*))'
+            r'|(?P<int>\d+)'
+            r'|(?P<key>' + keyw_list + r')'
+            r'|(?P<cmp>(<=|>=|=<|=>))'
             r'|(?P<all>.)'
             r')'
             )
 
-print_at = r'|(?P<lpa>^\b$)'  # Create a lpa key that matches nothing
-if print_tgl:
-    print_at = r'|(?P<lpa>(?:LOCATE)(?P<cor>[^:]*?):\s*PRINT)'
+variables = r'[A-Za-z0-9$#!%]'
 
-match_elem = re.compile(elements % print_at, re.I)
+repelcbef = r'[A-Za-z0-9{}")]'
+repelcaft = r'[A-Za-z0-9{}"(]'
+
+spacesbef = r'^(:|\+|-|\*|/|\^|\\|and|or|not|xor|eqv|imp|mod)$'
+spacesaft = r'^(\+|-|\*|/|\^|\\|and|or|not|xor|eqv|imp|mod)$'
+
+getstrings = r'(?P<lit>"(?:[^"]*)(?:"|$))'
+to_endline = r'(?P<lit>.*$)'
+to_endsect = r'(?P<lit>.*?(?=\:|$))'
+
+match_elements = re.compile(elements % getstrings, re.I)
+match_tendline = re.compile(elements % to_endline, re.I)
+match_tendsect = re.compile(elements % to_endsect, re.I)
+
+show_log('', 'Loading file', 3)
+classic_code = load_file(file_load)
 
 show_log('', 'Converting lines', 3)
-prev_grp = ''
+buff = ''
+match = ' '
 prev_line = 0
+line_number = 0
+keep_caps = False
 dig_dict = {}
 line_labels = {}
+match_current = match_elements
 for line in classic_code:
     line = line.strip()
 
@@ -146,88 +184,90 @@ for line in classic_code:
         show_log(line, 'Line_number_alone', 2)
         continue
 
-    g = match_elem.match(line)
+    if not line[0].isdigit():
+        show_log(line_number, 'No_line_number_(after)', 1)  # Exit
+
+    g = match_elements.match(line)
     p = g.end()
-    if not g.group('num'):
-        show_log('', 'No_line_number', 1)  # Exit
 
     line_number = int(g.group().strip())
     if line_number < prev_line:
         show_log(line_number, 'Line_number_out_of_order', 1)  # Exit
+
     prev_line = line_number
 
     dig_line = ''
     get_lnumber = False
-    while True:
+    while p < len(line):
 
-        prev_ch = line[p - 1:p].upper()
-        prev_spc = ''
-        if (('A' <= prev_ch <= 'Z' or '0' <= prev_ch <= '9')
-                and prev_grp != 'key' and prev_grp != 'lpa'):
-            prev_spc = ' '
+        prev_spc = check_space(match[-1].upper(), repelcbef)
 
-        next_ch = line[p:p + 1]
-        if not next_ch.isdigit() and next_ch != ' ':
-            if next_ch == ',' and get_lnumber:
-                get_lnumber = True
-            else:
-                get_lnumber = False
-
-        if p >= len(line):
-            break
-
-        g = match_elem.match(line, p)
+        g = match_current.match(line, p)
         p = g.end()
         match = g.group()
+        match_current = match_elements
 
-        next_ch = line[p:p + 1].upper()
-        next_spc = ''
-        if 'A' <= next_ch <= 'Z' or '0' <= next_ch <= '9':
-            next_spc = ' '
+        next_spc = check_space(line[p:p + 1].upper(), repelcaft)
 
-        prev_grp = ''
+        if get_lnumber and (g.lastgroup != 'int'
+                            and match != ','
+                            and match != ' '):
+            get_lnumber = False
+
         if g.group('key'):
-            prev_grp = 'key'
-            match = prev_spc + g.group().lower() + next_spc
-            if match.strip().upper() in branching:
+            match = match.upper()
+
+            if p < len(line):
+                if (match == 'REM' or match == "'"):
+                    match_current = match_tendline
+
+                if match == 'DATA':
+                    match_current = match_tendsect
+
+            if match in branc:
                 get_lnumber = True
 
-        elif g.group('lpa'):
-            prev_grp = 'lpa'
-            item = g.group("cor")
-            item = item.replace(' ', '')
-            show_log(line_number, f'Converted_to: [?@]{item}', 4)
-            space = '' if next_ch == ' ' else ' '
-            match = f'[?@]{item}{space}'
+            match = prev_spc + match + next_spc
 
-        elif g.group('num') and get_lnumber:
+        elif g.group('int') and get_lnumber:
             if int(match) == line_number:
-                show_log(line_number, f'Found_self_jump: {match}', 4)
                 match = '{@}'
             else:
-                show_log(line_number, f'Found_jump: {match}', 4)
-                item = line_labels.get(match.strip(), [])
+                item = line_labels.get(int(match), [])
                 item.append(line_number)
-                line_labels[int(match.strip())] = item
+                line_labels[int(match)] = item
+
                 match = f'{{l_{match.strip()}}}'
 
-        elif g.group('rem'):
-            if g.group().upper().startswith('R'):
-                match = 'rem' + next_spc + match[3:]
-            else:
-                match = match
+        elif g.group('lit'):
+            keep_caps = True
 
-        elif g.group('dat'):
-            match = 'data ' + next_spc + match[4:]
+        match = force_space(match)
 
-        elif g.group('str'):
-            match = match
-
-        else:
+        if not keep_caps:
             match = match.lower()
 
-        dig_line += match
+        if (p <= len(line)
+                and not g.group('key')
+                and re.match(variables, match)):
+            buff += match
+        else:
 
+            # if buff != '' and buff != ' ':
+            #     print(buff.strip())
+            # if match != '' and match != ' ':
+            #     print(match)
+
+            dig_line += buff
+            dig_line += match
+            buff = ''
+
+        keep_caps = False
+
+    # if buff != '' and buff != ' ':
+    #     print(buff.strip())
+    dig_line += buff
+    buff = ''
     dig_dict[line_number] = dig_line.lstrip()
 
 show_log('', 'Checking for branching errors', 3)
@@ -237,14 +277,10 @@ for lines in line_labels:
             show_log(line, f'Line_does_not_exist: {lines}', 2)
 
 show_log('', 'Assembling final code', 3)
-n = 0
 ident = ''
 dignified_code = []
 for line in sorted(dig_dict.keys()):
-    n += 1
     if line in line_labels:
-        show_log(n, f'Created_label: {{l_{str(line)}}}', 4)
-        n += 1
         if lline_tgl:
             dignified_code.append('\n')
         if ident_tgl:
@@ -255,7 +291,6 @@ for line in sorted(dig_dict.keys()):
 show_log('', ' '.join(['File saving']), 3)
 try:
     with open(file_save, 'w') as f:
-        show_log('', ' '.join(['Saving_file:', file_save]), 4)
         for line in dignified_code:
             f.write(line)
 except IOError as e:
@@ -263,3 +298,26 @@ except IOError as e:
 
 # for line in dignified_code:
     # print(line.strip())
+
+
+# numbers = (r'(?P<num>(?:'
+#            r'(?:[0-9][0-9]*)?\.(?:[0-9]*[0-9])?'
+#            r'|(?:[0-9](?:[0-9]*[0-9])?)'
+#            r')'
+#            r'(?:'
+#            r'[%!\#]'
+#            r'|[ED][-+]?(?:[0-9]*[0-9])?'
+#            r')?)'
+#            )
+
+# print_at = r'(?P<lpa>^\b$)'  # Create a lpa key that matches nothing
+# if print_tgl:
+#     print_at = r'(?P<lpa>(?:LOCATE)(?P<cor>[^:]*?):\s*PRINT)'
+
+# elif g.group('lpa'):
+#     prev_grp = 'lpa'
+#     item = g.group("cor").lower()
+#     item = item.replace(' ', '')
+#     show_log(line_number, f'Converted_to: [?@]{item}', 4)
+#     space = '' if next_ch == ' ' else ' '
+#     match = f'[?@]{item}{space}'
