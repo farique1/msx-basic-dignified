@@ -49,7 +49,7 @@ funct = ['ABS', 'ASC', 'ATN', r'ATTR\$', r'BIN\$', 'CDBL', r'CHR\$', 'CINT',
 branc = ['AUTO', 'DELETE', 'ELSE', 'ERL', 'GOSUB', 'GOTO', 'LIST', 'LLIST',
          'RENUM', 'RESTORE', 'RESUME', 'RETURN', 'RUN', 'THEN']
 
-file_load = 'basictests/Trek3T.asc'         # Source file
+file_load = ''         # Source file
 file_save = ''         # Destination file
 ident_tgl = True       # Add indent to non label lines
 lline_tgl = True       # Add blank line before labels

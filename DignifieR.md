@@ -2,15 +2,15 @@
 **v1.1**  
   
 **MSX Basic DignifieR** converts Classic MSX Basic to the Dignified format.  
-It eases the heavily repetitive and error prone task of removing line numbers, creating branching labels adding spaces between keywords, etc.  
+It eases the heavily repetitive and error prone task of removing line numbers, creating branching labels, adding spaces between keywords, etc.  
 Helps if you want to convert a lot of files or a long one for editing or just for better visualisation / reading.  
   
-You have a series of options to configure the appearance of the final Dignified code according to your preferences.  
+There is a series of options to configure the appearance of the final Dignified code according to your preferences.  
   
 ## Usage  
 ### Arguments  
   
-You can control the behaviour of **MSX Basic DignifieR** by altering the variables on the code or through command line arguments.  
+You can control the behaviour of **MSX Basic DignifieR** through command line arguments.  
   
 Run with: `msxbader.py <source> [destination] args...`  
   
