@@ -1,16 +1,16 @@
+  
 # MSX Basic DignifieR  
-**v1.1**  
+**v1.2**  
   
 **MSX Basic DignifieR** converts Classic MSX Basic to the Dignified format.  
-It eases the heavily repetitive and error prone task of removing line numbers, creating branching labels, adding spaces between keywords, etc.  
-Helps if you want to convert a lot of files or a long one for editing or just for better visualisation / reading.  
+It eases the heavily repetitive and error prone task of removing line numbers, creating branching labels adding spaces between keywords, etc. Helps if you want to convert a lot of files or a long one for editing or just for better visualisation / reading. There are a series of options to configure the appearance of the final Dignified code according to your preferences. .  
   
-There is a series of options to configure the appearance of the final Dignified code according to your preferences.  
+> The interplay between all the configurable options and the variety of the Basic itself is somewhat complex and was not nearly as tested as it should so keep an eye for and please report any bugs.  
   
 ## Usage  
 ### Arguments  
   
-You can control the behaviour of **MSX Basic DignifieR** through command line arguments.  
+You can control the behaviour of **MSX Basic DignifieR**  through command line arguments.  
   
 Run with: `msxbader.py <source> [destination] args...`  
   
@@ -27,53 +27,79 @@ ini: `destin_file = [destination]` args: `[destination]`
 	(it will overwrite any file with the same name).  
   
 **Format**  
-- *Indent toggle*  
-Indent all non label lines after the first label.  
-arg: `-it` Default: `True`  
+- *Convert to lower case*  
+Convert all text (excluding: "", DATAs and REMs) to lowercase.  
+arg: `-tl` Default: `True`  
   
-- *Blank line toggle*  
-Insert a blank line before line labels.  
-arg: `-lt` Default: `True`  
+- *Keep original spaces*  
+All spaces are normalized to 1 by default. This will keep any original spaces beyond that.  
+arg: `-ks` Default: `False`  
   
-- *LOCATE:PRINT toggle*  
+- *Convert LOCATE:PRINT*  
 Convert `locate x,y:print` to `[?@]x,y `.  
-arg: `-pt` Default: `False`  
+arg: `-cp` Default: `True`  
   
-- *Remove REMs*  
-Remove line or inline REMs from the code  
-Branching instructions to removed REM lines will be orphaned but a warning will be generated.  
-`l` remove line REMs, `i` remove inline REMs.  
-arg: `-rr [l,i]` Default: `None`  
+- *Format labels*  
+Define how labels are converted.  
+`i` Indent non label lines after the first label.  
+`s` Add a blank line before each label.  
+(there can be more than one letter as argument)  
+arg: `-fl [i,s]` Default: `is`  
   
-- *Unravel lines*  
-Insert a line break after a `:`.  
-`i` with indent, `w` without indent.  
-arg: `-ul [i, w]` Default: `None`  
+- *Format REMs*  
+Define how REMs are converted.  
+`l` Remove REMs alone on a line.  
+`i` Remove REMs at the end of a line.  
+`b` Keep blank REM lines as blank lines.  
+`m` Move inline REMs above its original line.  
+`k` Add a label if a REM directed by a branching instruction was removed.  
+(there can be more than one letter as argument)  
+arg: `-fr [l,i,b,m,k]` Default: `m`  
   
-- *Unravel THEN*  
-Insert a `_` line break after a `THEN` or `ELSE`.  
-`t` after THEN, `e` after ELSE, `b` before ELSE.  
-arg: `-ut [t,e,b]` Default: `None`  
+- *Unravel THEN/ELSE*  
+Break the line on THEN and/or ELSE with a `_` line break.  
+`t` Break the line after THEN.  
+`n` Break the line before THEN.  
+`e` Break the line after ELSE.  
+`b` Break the line before ELSE.  
+(there can be more than one letter as argument)  
+arg: `-ut [t,n,e,b]` Default: `te`  
+  
+- *Unravel colons*  
+Break the line on `:`.  
+`w` Break the line and do not indent.  
+`i` Break the line indenting after the first `:`.  
+`c` Put the `:` on the line below.  
+(there can be more than one letter as argument)  
+arg: `-uc [i,w,c]` Default: `ic`  
   
 - *Repel before keyword*  
-A regex string with elements which should generate a space before a keyword.  
-arg: `-rb` Default: `[A-Za-z0-9{}")]`  
+A case insensitive regex string with elements which should generate a space before a keyword and them.  
+arg: `-rb` Default: `[a-z0-9{}")$]`  
   
 - *Repel after keyword*  
-A regex string with elements which should generate a space after a keyword.  
-arg: `-ra` Default: `[A-Za-z0-9{}"(]`  
+A case insensitive regex string with elements which should generate a space after a keyword and them.  
+arg: `-ra` Default: `[a-z0-9{}"(]`  
+  
+- *Join before*  
+A case insensitive regex string with elements forcing the removal of spaces before them.  
+arg: `-jb` Default: `^(,|:)$`  
+  
+- *Join after*  
+A case insensitive regex string with elements forcing the removal of spaces after them.  
+arg: `-ja` Default: `^(,|:)$`  
   
 - *Force spaces before*  
-A regex string with elements that must have a space before them.  
+A case insensitive regex string with elements that must have a space before them.  
 arg: `-sb` Default: `^(:|\+|-|\*|/|\^|\\)$`  
   
 - *Force spaces after*  
-A regex with elements that must have a space after them.  
-arg: `-sa` Default: `^(\+|-|\*|/|\^|\\)$`  
+A case insensitive regex string with elements that must have a space after them.  
+arg: `-sa` Default: `^(#|\+|-|\*|/|\^|\\)$`  
   
 - *Force together*  
-A regex with elements that will be forced together.  
-arg: `-ft` Default: `^(\+|-|\*|/|\^|\\)$`  
+A case insensitive regex string with elements that will be forced together.  
+arg: `-ft` Default: `(<=|>=|=<|=>|\)-\()`  
   
 **Misc**  
 - *Verbose*  
