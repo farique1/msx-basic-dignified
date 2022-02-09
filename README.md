@@ -1,9 +1,7 @@
-
-  
 <img src="https://github.com/farique1/msx-basic-dignified/blob/master/Images/GitHub_Badig_Logo-02.png" alt="MSX Basic Dignified" width="290" height="130">  
   
 # MSX Basic Dignified  
-**v1.5** - **Python 3.8!**  
+**v1.6**  
   
 **MSX Basic Dignified** is a 'dialect' of MSX Basic using modern coding style and standards that can be composed on any text editor and converted to the traditional MSX Basic to be executed.  
   
@@ -335,6 +333,8 @@ ini: `batoken_filepath = []`
 The path to the **oMBdT** installation.  
 ini: `openbatoken_filepath = []`  
   
+> To maintain compatibility across Windows and MacOS there are individual path sections in the `.ini` file for each of the systems. This is so if you are like me you can just be working on the same program on a PC and a Mac **at the same time**.  
+  
 **Numbering**  
 - *Starting line number*  
 The number of the first line.  
@@ -582,3 +582,4 @@ Help is available using:
 **MSX Basic Dignfied** was made on a Mac OS with Python 2.7.10 and eventually ported to Python 3.8.1.  
 This was the first Python program I made; it has been through a lot of iterations but it is still a hot mess of ideas, experiments and alternative (bad) coding.  
 **Use with care and caution.**  
+  

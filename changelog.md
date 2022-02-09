@@ -1,4 +1,12 @@
 # MSX Basic Dignified  
+
+## **v1.6.0**  
+***9-12-2021***  
+- WINDOWS COMPATIBILITY YEY!  
+	- Line feed character adaptation.  
+	- Individual Windows and Mac paths on the `.ini` file.  
+	- `os.path()` operations to improve compatibility across systems.  
+- Changed `.ini` section names.  
   
 ## **v1.5.0**  
 ***4-3-2020***  

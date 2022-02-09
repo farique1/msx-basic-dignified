@@ -1,11 +1,10 @@
-  
 # MSX Basic DignifieR  
-**v1.2**  
+**v1.3**  
   
 **MSX Basic DignifieR** converts Classic MSX Basic to the Dignified format.  
-It eases the heavily repetitive and error prone task of removing line numbers, creating branching labels adding spaces between keywords, etc. Helps if you want to convert a lot of files or a long one for editing or just for better visualisation / reading. There are a series of options to configure the appearance of the final Dignified code according to your preferences. .  
+It eases the heavily repetitive and error prone task of removing line numbers, creating branching labels adding spaces between keywords, etc. Helps if you want to convert a lot of files or a long one for editing or just for better visualisation / reading. There are a series of options to configure the appearance of the final Dignified code according to your preferences.  
   
-> The interplay between all the configurable options and the variety of the Basic itself is somewhat complex and was not nearly as tested as it should so keep an eye for and please report any bugs.  
+> The interplay between all the configurable options and the variety of the Basic itself is somewhat complex and was not nearly as tested as it should so please keep an eye and report any bugs.  
   
 ## Usage  
 ### Arguments  

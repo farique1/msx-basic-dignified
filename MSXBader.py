@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 '''
 MSX Basic DignifiER
-v1.2
+v1.3
 Convert traditional MSX Basic to modern MSX Basic Dignified format.
 
-Copyright (C) 2020 - Fred Rique (farique)
+Copyright (C) 2020-2022 - Fred Rique (farique)
 https://github.com/farique1/msx-basic-dignified
 
-BUGS:
+New: 1.3v 09/12/2021
+    WINDOWS COMPATIBILITY YEY!
+        os.path() operations to improve compatibility across systems
 
 TODO (and ideas):
     Make an .ini file
-    Check for : when unraveling at the beginning of ELSE
     Force together character pairs without capturing a group
     Unravel only FORs (with indentation option)
-    Unravel only IFs (with indentation option)
+    Indentation option for IFs
+    Option to remove colons when unraveling
+    Remove option to keep original spacing
     Centralize all unravel/indent options on a single variable:
         ie. 'adidfdtbec' a=all f=for i=if n=bef_then t=aft_then b=bef_else e=aft_else
                         d=indentation, modify the item before, id=indent_if
@@ -57,9 +60,10 @@ conv_lower = True      # Convert non literals to lowercase
 keep_spcs = False      # Keep original spacing
 conv_locprt = True     # Convert locate:print to [?@]
 format_label = 'is'    # Format labels: i=indent lines, s=blank line before
-format_rems = 'm'      # Process REMs. l=line, i=inline, b=keep blank, m=move before k=keep label
-unravel_then = 'te'    # Break after THEN/ELSE: n=before THEN, t=after THEN, b=before ELSE, e=after ELSE
-unravel_colons = 'ic'  # Break lines at ':': i=with indent, w=without indent, c=colon on line below
+format_rems = ''       # Process REMs. l=line, i=inline, b=keep blank, m=move before k=keep label
+unravel_if = ''        # Break IF/THEN/ELSE lines: f=colons, t=bef THEN, n=aft THEN, e=bef ELSE, s=aft ELSE
+unravel_for = 'f'
+unravel_colons = 'c'  # Break lines at ':': i=with indent, w=without indent, c=colon on line below
 verbose_level = 3      # Show processing status: 0-silent 1-+errors 2-+warnings 3-+steps 4-+details
 # Put a space before and/or after a keyword if preceded/followed by this matches
 repelcbef = r'[a-z0-9{}")$]'
@@ -108,11 +112,11 @@ parser.add_argument("-fr", default=format_rems, choices=['l', 'i', 'b', 'm', 'k'
                     '(Can mix letters together) '
                     f'def: {format_rems}')
 
-parser.add_argument("-ut", default=unravel_then, choices=['t', 'n', 'e', 'b'],
+parser.add_argument("-ut", default=unravel_if, choices=['t', 'n', 'e', 'b'],
                     type=str.lower, help='Break after THEN/ELSE: t=after THEN, '
                     'n=before THEN, t=after THEN, b=before ELSE, e=after ELSE. '
                     '(Can mix letters together) '
-                    f'def: {unravel_then}')
+                    f'def: {unravel_if}')
 
 parser.add_argument("-uc", default=unravel_colons, choices=['i', 'w', 'c'],
                     type=str.lower, help='Break lines at ":": i=with indent, '
@@ -160,17 +164,17 @@ file_load = args.input
 file_save = args.output
 if args.output == '':
     save_path = os.path.dirname(file_load)
-    save_path = '' if save_path == '' else save_path + '/'
+    # save_path = '' if save_path == '' else save_path
     save_temp = os.path.basename(file_load)
     save_temp = os.path.splitext(save_temp)[0] + '.bad'
-    file_save = save_path + save_temp
+    file_save = os.path.join(save_path, save_temp)
 conv_lower = args.tl
 keep_spcs = args.ks
 conv_locprt = args.cp
 format_label = args.fl
 format_rems = args.fr
 unravel_colons = args.uc
-unravel_then = args.ut
+unravel_if = args.ut
 repelcbef = args.rb
 repelcaft = args.ra
 stripsbef = args.jb
@@ -194,6 +198,7 @@ elements = (r'(?:'
             fr'|(?P<key>{keyw_list})'
             fr'|(?P<var>[a-z]({rejkwvar}|[a-z0-9]*?{rejkwvar})[!#$%%]?)'
             fr'|(?P<glu>{forcetogt})'
+            r'|(?P<col>:)'
             r'|(?P<ret>\r)'
             r'|(?P<spc>\s+)'
             r'|(?P<msc>.)'
@@ -202,6 +207,7 @@ elements = (r'(?:'
 
 match_int = re.compile(r'\s*\d+')
 has_print = re.compile(r'([^:]+?)(?::\s*print)', re.I)
+get_fornv = re.compile(r'(\s*\w*\s*,?\s*)*?(?=then|else|:|\r)', re.I)
 
 getstrings = r'(?P<lit>"(?:[^"]*)((?:")|(?=\r)))'
 to_endline = r'(?P<lit>.*(?=\r))'
@@ -333,17 +339,22 @@ def do_lines(lnumber, line):
     p = 0
     g = re.match(r'', '')
     indent = 0
+    indent_acc = 0
     match = ' '
     dig_line = ''
     rem_line = ''
+    carry_match = False
+    temp_for = 0
+    unravel = ('i' in unravel_colons or 'w' in unravel_colons)
     dig_list = []
     branch_l = []
     keep_caps = False
     is_branching = False
-    repeat_match = False
     match_current = match_elements
     while p < len(line):
-        split = ''
+        split = False
+        carry_match = False
+        lone_match = False
 
         p_match = ''
         prev_spc = ''
@@ -405,39 +416,119 @@ def do_lines(lnumber, line):
 
                         match = ''
 
-                if match == 'DATA':
+                elif match == 'DATA':
                     match_current = match_tendsect
 
-                if match == 'LOCATE' and conv_locprt:
+                elif match == 'LOCATE' and conv_locprt:
                     if haslp_g := has_print.match(line, p):
                         locparg = haslp_g.group(1) + '\r'
                         locpinf = do_lines(-1, locparg)[0]
                         locpinf = locpinf[0][0]
                         locpinf = locpinf.replace(' ', '')
-                        locpinf = locpinf.rstrip()
+                        # locpinf = locpinf.rstrip()
                         match = f'[?@]{locpinf}'
                         p = haslp_g.end()
                         next_spc = ''
                         if line[p] != ' ':
                             next_spc = ' '
 
-                if match == 'THEN' or match == 'ELSE':
-                    b, a = 't', 'n'
+                elif match == 'IF' and 'f' in unravel_if:
+                    unravel = True
+
+                    if dig_line.strip() and dig_line.strip() != ':':
+                        split = True
+                        carry_match = True
+
+                        if not dig_line.rstrip().endswith(':'):
+                            dig_line = dig_line.rstrip() + ' _'
+                        elif 'c' in unravel_colons:
+                            dig_line = dig_line[:-1]
+                            match = ':' + match
+
+                elif match == 'THEN' or match == 'ELSE':
+                    a, b = 't', 'n'
                     if match == 'ELSE':
-                        b, a = 'e', 'b'
+                        a, b = 'e', 's'
 
-                    if a in unravel_then and not repeat_match:
-                        repeat_match = True
-                        p = g.start()
-                        match = '_'
-                        split += 't'
-                    elif a in unravel_then and repeat_match:
-                        repeat_match = False
+                    c = 0
+                    if a in unravel_if and dig_line.strip():
+                        c += 1
+                        carry_match = True
 
-                    if (b in unravel_then and not repeat_match
-                            and not next_int):
-                        match += ' _'
-                        split += 't'
+                        if not dig_line.rstrip().endswith(':'):
+                            split = True
+                            dig_line = dig_line.rstrip() + ' _'
+                        elif 'c' in unravel_colons:
+                            dig_line = dig_line[:-1]
+                            match = ':' + match
+
+                    if b in unravel_if and not next_int:
+                        split = True
+                        c += 1
+
+                        if line[p:].strip().startswith(':'):
+                            if 'c' not in unravel_colons:
+                                line = line[p:].lstrip().lstrip(':')
+                                match += ':'
+                                p = 0
+                        else:
+                            match = match.rstrip() + ' _'
+
+                    if c == 2:
+                        lone_match = True
+
+                elif match == 'FOR' and 'f' in unravel_for:
+                    temp_for += 1
+                    unravel = bool(temp_for)
+
+                    if dig_line.strip() and dig_line.strip() != ':':
+                        split = True
+                        carry_match = True
+
+                        if not dig_line.rstrip().endswith(':'):
+                            dig_line = dig_line.rstrip() + ' _'
+                        elif 'c' in unravel_colons:
+                            dig_line = dig_line[:-1]
+                            match = ':' + match
+
+                elif match == 'NEXT' and 'f' in unravel_for:
+                    temp_for -= 1
+                    unravel = bool(temp_for)
+
+                    fn_varg = get_fornv.match(line, p)
+                    fn_vars = fn_varg.group()
+                    match = match.rstrip() + ' ' + fn_vars.strip()
+                    p = fn_varg.end()
+
+                    c = 0
+                    if dig_line.strip():
+                        c += 1
+                        carry_match = True
+
+                        if not dig_line.rstrip().endswith(':'):
+                            split = True
+                            dig_line = dig_line.rstrip() + ' _'
+                        elif 'c' in unravel_colons:
+                            dig_line = dig_line[:-1]
+                            match = ':' + match
+
+                        split = True
+                        c += 1
+
+                        if line[p:].strip().startswith(':'):
+                            if 'c' not in unravel_colons:
+                                line = line[p:].lstrip().lstrip(':')
+                                match += ':'
+                                p = 0
+                        else:
+                            match = match.rstrip() + ' _'
+
+                    if c == 2:
+                        lone_match = True
+
+                    # if line[p:p + 1].strip() != ':':
+                    #     match = match.rstrip() + ' _'
+                    #     nx_count += 1
 
             if match in branc:
                 is_branching = True
@@ -454,37 +545,40 @@ def do_lines(lnumber, line):
         elif g.group('lit'):
             keep_caps = True
 
-        if match == ':' and p > 1:
+        if (unravel and (g.group('col')) or g.group('ret')):
+            split = True
             if 'c' in unravel_colons:
-                match = ''
-                p += -1
-            if unravel_colons:
-                split += 'c'
-            else:
-                split += 'n'
-
-        if g.lastgroup == 'ret':
-            split += 'e'
+                carry_match = True
 
         if not keep_caps and conv_lower:
             match = match.lower()
 
         match = force_space(match, p_match, n_match)
 
-        dig_line += match
+        if not carry_match:
+            dig_line += match
 
-        if lnumber >= 0:
-            show_log(lnumber, f'{g.lastgroup} {match}', 5)
-            if g.lastgroup == 'ret':
-                show_log('', '', 5)
+        # if lnumber >= 0:
+        #     show_log(lnumber, f'{g.lastgroup} {match} {split}', 3)
+        #     if g.lastgroup == 'ret':
+        #         show_log('', '', 3)
 
-        if split and split != 'n':
+        if split:
             dig_list.append([dig_line.lstrip(), indent])
             line = line[p:]
-            dig_line = ''
             p = 0
             if 'i' in unravel_colons and len(dig_list) == 1:
-                indent += 1
+                indent_acc += 1
+
+            dig_line = ''
+
+            indent = indent_acc
+
+            if lone_match:
+                dig_list.append([match.lstrip(), indent])
+                match = ''
+            if carry_match:
+                dig_line += match
 
         keep_caps = False
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 MSX Basic Dignified
-v1.5
+v1.6
 Convert modern MSX Basic Dignified to traditional MSX Basic format.
 
-Copyright (C) 2019-2020 - Fred Rique (farique)
+Copyright (C) 2019-2022 - Fred Rique (farique)
 https://github.com/farique1/msx-basic-dignified
 
 Better experienced with MSX Sublime Tools at:
@@ -17,41 +17,12 @@ https://github.com/farique1/MSX-Basic-Tokenizer
 msxbadig.py <source> <destination> [args...]
 msxbadig.py -h for help.
 
-New: v1.5 13-02-2020
-    Ported to Python 3.8!
-    No more forcing an 8 character file name for output (we are all adults here and understand the limitations of the MSX disk system.)
-    Added Loop Labels.
-    Added Line Toggles.
-    Added Rem Blocks with '' and ###.
-    Added the possibility of DEFINEs as a variables to other DEFINEs.
-        Re coded and streamlined the entire DEFINE replacement routine.
-    Added -rh and rem_header= to remove the two info REM header lines on the converted code.
-    Added -tr and translate= to translate unicode special characters to a MSX ASCII similar.
-    Added linefeed to last line of code to force parsing it.
-    Changed the standing characters for the DATA, REM, QUOTES and LABELS placeholders to way above the usual ASCII range of the old computers to prevent misinterpretation.
-    Changed colon spaces to preserve spacing if keep spacing is used
-    Changed defaults to provide a more compact code.
-        General spacing default now is 0 spaces.
-        Label line default is now 2 (no REM labels.).
-        Strip the GOTOs after THEN/ELSE is now the default.
-    Changed -fb to -frb to standardize the nomenclature (3 letters are for internal arguments).
-    Integrated colon spacing arguments -bc, -ac, nnbr_spaces_bef_colon= and nnbr_spaces_aft_colon= into -cs and colon_spaces= that takes b, a and ba for before, after and before and after.
-    Integrated label line spacing arguments -br, -ar, rem_bef_label and rem_aft_label into -lg and label_gap= that takes b, a, ba for before, after and before and after.
-    Integrated spacing arguments -ks and keep_original_spaces= into -gs and general_spaces= that now takes 0, 1 and k for no space, one space and keep original spacing (there is no more option for more the 1 general space.)
-    Integrated indent arguments -ci, -si, keep_indent_space_chars= and indent_tab_spaces= into -ki and keep_indent= and made it take the number of TAB spaces.
-    Integrated REM format arguments -lr, -rr, label_rem_format= and regul_rem_format= into -nr and new_rem_format= (there is no more distinction between label and regular REMs.)
-    Improved verbose output
-        Optimised a little.
-        Standardised the arguments help text.
-        Added reporting of [?@] arguments on detailed verbose.
-        Comments after a label without ' generates a warning.
-        Undefined DEFINEs demoted to warning from error (while bug picking [...] constructs inside DATA, REM and QUOTES is not fixed.
-        -vb 0 now quit silently on errors.
-    Fixed a bug with parentheses on function call variables and improved the underlying code.
-    Fixed a potential small bug with spaces before colon.
-    Fixed small bug converting existing REMs.
-    Fixed potential small bug removing line numbers.
-    Removed Known Bugs section here, they were growing too fast.
+New: 1.6v 09/12/2021
+    WINDOWS COMPATIBILITY YEY!
+        Line feed character adaptation
+        Individual Windows and Mac paths on the .INI file
+        os.path() operations to improve compatibility across systems
+    Changed .INI section names
 """
 
 # Use on terminal for benchmarking
@@ -59,6 +30,7 @@ New: v1.5 13-02-2020
 
 import re
 import os.path
+import platform
 import argparse
 import subprocess
 import configparser
@@ -88,7 +60,7 @@ convert_print = False       # Convert ? to PRINT
 strip_then_goto = 'g'       # Strip adjacent THEN/ELSE or GOTO: t-THEN/ELSE g-GOTO
 translate = False           # Translate Unicode characters to native similar
 long_var_summary = 0        # Show long variables summary on rems at the end of the program (0-none 1+-var per line)
-verbose_level = 3           # Show processing status: 0-silent 1-+erros 2-+warnings 3-+steps 4-+details
+verbose_level = 4           # Show processing status: 0-silent 1-+erros 2-+warnings 3-+steps 4-+details
 output_format = 'b'         # Tokenized or ASCII output: t-tokenized a-ASCII b-both
 tokenize_tool = 'b'         # Tool used to tokenize the ASCII code: b-MSX Basic Tokenizer(def) o-openMSX Basic Tokenizer
 export_list = 0             # Save a .mlt list file detailing the tokenization: [#] number of bytes per line (def 16) (max 32) (0 no)
@@ -96,6 +68,9 @@ monitor_exec = False        # Monitor the execution on the emulator and catch er
 is_from_build = False       # Tell if it is being called from a build system (show file name on error messages and other stuff)
 batoken_filepath = ''       # Path to MSX Basic Tokenizer ('' = local path)
 openbatoken_filepath = ''   # Path to openMSX Basic Tokenizer ('' = local path)
+
+is_windows = platform.system() == "Windows"  # Get the operating system
+python_app = 'python' if is_windows else 'python3'
 
 
 def show_log(line, text, level, **kwargs):
@@ -127,41 +102,43 @@ def show_log(line, text, level, **kwargs):
         raise SystemExit(0)
 
 
-local_path = os.path.split(os.path.abspath(__file__))[0] + '/'
-if os.path.isfile(local_path + 'msxbadig.ini'):
+local_path = os.path.split(os.path.abspath(__file__))[0]
+ini_path = os.path.join(local_path, 'MSXBadig.ini')
+if os.path.isfile(ini_path):
+    ini_section = 'WINPATHS' if is_windows else 'MACPATHS'
     config = configparser.ConfigParser()
     config.sections()
     try:
-        config.read(local_path + 'msxbadig.ini')
-        use_ini_file = config.getboolean('DEFAULT', 'use_ini_file') if config.get('DEFAULT', 'use_ini_file') else False
+        config.read(ini_path)
+        use_ini_file = config.getboolean('CONFIGS', 'use_ini_file') if config.get('CONFIGS', 'use_ini_file') else False
         if use_ini_file:
-            file_load = config.get('DEFAULT', 'source_file') if config.get('DEFAULT', 'source_file') else file_load
-            file_save = config.get('DEFAULT', 'destin_file') if config.get('DEFAULT', 'destin_file') else file_save
-            line_start = config.getint('DEFAULT', 'line_start') if config.get('DEFAULT', 'line_start') else line_start
-            line_step = config.getint('DEFAULT', 'line_step') if config.get('DEFAULT', 'line_step') else line_step
-            leading_zero = config.getboolean('DEFAULT', 'leading_zeros') if config.get('DEFAULT', 'leading_zeros') else leading_zero
-            rem_header = config.getboolean('DEFAULT', 'rem_header') if config.get('DEFAULT', 'rem_header') else rem_header
-            colon_spaces = config.getint('DEFAULT', 'colon_spaces') if config.get('DEFAULT', 'colon_spaces') else colon_spaces
-            general_spaces = str(config.getint('DEFAULT', 'general_spaces')) if config.get('DEFAULT', 'general_spaces') else general_spaces
-            unpack_operators = config.getboolean('DEFAULT', 'unpack_operators') if config.get('DEFAULT', 'unpack_operators') else unpack_operators
-            keep_blank_lines = config.getboolean('DEFAULT', 'keep_blank_lines') if config.get('DEFAULT', 'keep_blank_lines') else keep_blank_lines
-            label_gap = config.getboolean('DEFAULT', 'label_gap') if config.get('DEFAULT', 'label_gap') else label_gap
-            show_labels = config.getboolean('DEFAULT', 'show_branches_labels') if config.get('DEFAULT', 'show_branches_labels') else show_labels
-            label_lines = config.getint('DEFAULT', 'handle_label_lines') if config.get('DEFAULT', 'handle_label_lines') else label_lines
-            new_rem_format = config.get('DEFAULT', 'new_rem_format') if config.get('DEFAULT', 'new_rem_format') else new_rem_format
-            convert_rems = config.getboolean('DEFAULT', 'convert_rem_formats') if config.get('DEFAULT', 'convert_rem_formats') else convert_rems
-            keep_indent = config.getboolean('DEFAULT', 'keep_indent') if config.get('DEFAULT', 'keep_indent') else keep_indent
-            capitalise_all = config.getboolean('DEFAULT', 'capitalize_all') if config.get('DEFAULT', 'capitalize_all') else capitalise_all
-            convert_print = config.getboolean('DEFAULT', 'convert_interr_to_print') if config.get('DEFAULT', 'convert_interr_to_print') else convert_print
-            strip_then_goto = config.get('DEFAULT', 'strip_then_goto') if config.get('DEFAULT', 'strip_then_goto') else strip_then_goto
-            translate = config.getboolean('DEFAULT', 'translate') if config.get('DEFAULT', 'translate') else translate
-            long_var_summary = config.getint('DEFAULT', 'long_var_summary') if config.get('DEFAULT', 'long_var_summary') else long_var_summary
-            verbose_level = config.getint('DEFAULT', 'verbose_level') if config.get('DEFAULT', 'verbose_level') else verbose_level
-            output_format = config.get('DEFAULT', 'output_format') if config.get('DEFAULT', 'output_format') else output_format
-            tokenize_tool = config.get('DEFAULT', 'tokenize_tool') if config.get('DEFAULT', 'tokenize_tool') else tokenize_tool
-            export_list = config.getint('DEFAULT', 'export_list') if config.get('DEFAULT', 'export_list') else export_list
-            batoken_filepath = config.get('DEFAULT', 'batoken_filepath') if config.get('DEFAULT', 'batoken_filepath') else batoken_filepath
-            openbatoken_filepath = config.get('DEFAULT', 'openbatoken_filepath') if config.get('DEFAULT', 'openbatoken_filepath') else openbatoken_filepath
+            file_load = config.get('CONFIGS', 'source_file') if config.get('CONFIGS', 'source_file') else file_load
+            file_save = config.get('CONFIGS', 'destin_file') if config.get('CONFIGS', 'destin_file') else file_save
+            line_start = config.getint('CONFIGS', 'line_start') if config.get('CONFIGS', 'line_start') else line_start
+            line_step = config.getint('CONFIGS', 'line_step') if config.get('CONFIGS', 'line_step') else line_step
+            leading_zero = config.getboolean('CONFIGS', 'leading_zeros') if config.get('CONFIGS', 'leading_zeros') else leading_zero
+            rem_header = config.getboolean('CONFIGS', 'rem_header') if config.get('CONFIGS', 'rem_header') else rem_header
+            colon_spaces = config.getint('CONFIGS', 'colon_spaces') if config.get('CONFIGS', 'colon_spaces') else colon_spaces
+            general_spaces = str(config.getint('CONFIGS', 'general_spaces')) if config.get('CONFIGS', 'general_spaces') else general_spaces
+            unpack_operators = config.getboolean('CONFIGS', 'unpack_operators') if config.get('CONFIGS', 'unpack_operators') else unpack_operators
+            keep_blank_lines = config.getboolean('CONFIGS', 'keep_blank_lines') if config.get('CONFIGS', 'keep_blank_lines') else keep_blank_lines
+            label_gap = config.getboolean('CONFIGS', 'label_gap') if config.get('CONFIGS', 'label_gap') else label_gap
+            show_labels = config.getboolean('CONFIGS', 'show_branches_labels') if config.get('CONFIGS', 'show_branches_labels') else show_labels
+            label_lines = config.getint('CONFIGS', 'handle_label_lines') if config.get('CONFIGS', 'handle_label_lines') else label_lines
+            new_rem_format = config.get('CONFIGS', 'new_rem_format') if config.get('CONFIGS', 'new_rem_format') else new_rem_format
+            convert_rems = config.getboolean('CONFIGS', 'convert_rem_formats') if config.get('CONFIGS', 'convert_rem_formats') else convert_rems
+            keep_indent = config.getboolean('CONFIGS', 'keep_indent') if config.get('CONFIGS', 'keep_indent') else keep_indent
+            capitalise_all = config.getboolean('CONFIGS', 'capitalize_all') if config.get('CONFIGS', 'capitalize_all') else capitalise_all
+            convert_print = config.getboolean('CONFIGS', 'convert_interr_to_print') if config.get('CONFIGS', 'convert_interr_to_print') else convert_print
+            strip_then_goto = config.get('CONFIGS', 'strip_then_goto') if config.get('CONFIGS', 'strip_then_goto') else strip_then_goto
+            translate = config.getboolean('CONFIGS', 'translate') if config.get('CONFIGS', 'translate') else translate
+            long_var_summary = config.getint('CONFIGS', 'long_var_summary') if config.get('CONFIGS', 'long_var_summary') else long_var_summary
+            verbose_level = config.getint('CONFIGS', 'verbose_level') if config.get('CONFIGS', 'verbose_level') else verbose_level
+            output_format = config.get('CONFIGS', 'output_format') if config.get('CONFIGS', 'output_format') else output_format
+            tokenize_tool = config.get('CONFIGS', 'tokenize_tool') if config.get('CONFIGS', 'tokenize_tool') else tokenize_tool
+            export_list = config.getint('CONFIGS', 'export_list') if config.get('CONFIGS', 'export_list') else export_list
+            batoken_filepath = config.get(ini_section, 'batoken_filepath') if config.get(ini_section, 'batoken_filepath') else batoken_filepath
+            openbatoken_filepath = config.get(ini_section, 'openbatoken_filepath') if config.get(ini_section, 'openbatoken_filepath') else openbatoken_filepath
     except (ValueError, configparser.NoOptionError) as e:
         show_log('', 'msxbadig.ini: ' + str(e), 1)
 
@@ -199,34 +176,36 @@ args = parser.parse_args()
 
 # Write .ini file if told to
 if args.ini:
-    config.set('DEFAULT', 'use_ini_file', 'True')
-    config.set('DEFAULT', 'source_file', file_load)
-    config.set('DEFAULT', 'destin_file', file_save)
-    config.set('DEFAULT', 'line_start', line_start)
-    config.set('DEFAULT', 'line_step', line_step)
-    config.set('DEFAULT', 'leading_zeros', leading_zero)
-    config.set('DEFAULT', 'rem_header', rem_header)
-    config.set('DEFAULT', 'colon_spaces', colon_spaces)
-    config.set('DEFAULT', 'general_spaces', general_spaces)
-    config.set('DEFAULT', 'unpack_operators', unpack_operators)
-    config.set('DEFAULT', 'keep_blank_lines', keep_blank_lines)
-    config.set('DEFAULT', 'label_gap', label_gap)
-    config.set('DEFAULT', 'show_branches_labels', show_labels)
-    config.set('DEFAULT', 'handle_label_lines', label_lines)
-    config.set('DEFAULT', 'new_rem_format', new_rem_format)
-    config.set('DEFAULT', 'convert_rem_formats', convert_rems)
-    config.set('DEFAULT', 'keep_indent', keep_indent)
-    config.set('DEFAULT', 'capitalize_all', capitalise_all)
-    config.set('DEFAULT', 'convert_interr_to_print', convert_print)
-    config.set('DEFAULT', 'strip_then_goto', strip_then_goto)
-    config.set('DEFAULT', 'translate', translate)
-    config.set('DEFAULT', 'long_var_summary', long_var_summary)
-    config.set('DEFAULT', 'verbose_level', verbose_level)
-    config.set('DEFAULT', 'output_format', output_format)
-    config.set('DEFAULT', 'tokenize_tool', tokenize_tool)
-    config.set('DEFAULT', 'export_list', export_list)
-    config.set('DEFAULT', 'batoken_filepath', batoken_filepath)
-    config.set('DEFAULT', 'openbatoken_filepath', openbatoken_filepath)
+    config.set('CONFIGS', 'use_ini_file', 'True')
+    config.set('CONFIGS', 'source_file', file_load)
+    config.set('CONFIGS', 'destin_file', file_save)
+    config.set('CONFIGS', 'line_start', line_start)
+    config.set('CONFIGS', 'line_step', line_step)
+    config.set('CONFIGS', 'leading_zeros', leading_zero)
+    config.set('CONFIGS', 'rem_header', rem_header)
+    config.set('CONFIGS', 'colon_spaces', colon_spaces)
+    config.set('CONFIGS', 'general_spaces', general_spaces)
+    config.set('CONFIGS', 'unpack_operators', unpack_operators)
+    config.set('CONFIGS', 'keep_blank_lines', keep_blank_lines)
+    config.set('CONFIGS', 'label_gap', label_gap)
+    config.set('CONFIGS', 'show_branches_labels', show_labels)
+    config.set('CONFIGS', 'handle_label_lines', label_lines)
+    config.set('CONFIGS', 'new_rem_format', new_rem_format)
+    config.set('CONFIGS', 'convert_rem_formats', convert_rems)
+    config.set('CONFIGS', 'keep_indent', keep_indent)
+    config.set('CONFIGS', 'capitalize_all', capitalise_all)
+    config.set('CONFIGS', 'convert_interr_to_print', convert_print)
+    config.set('CONFIGS', 'strip_then_goto', strip_then_goto)
+    config.set('CONFIGS', 'translate', translate)
+    config.set('CONFIGS', 'long_var_summary', long_var_summary)
+    config.set('CONFIGS', 'verbose_level', verbose_level)
+    config.set('CONFIGS', 'output_format', output_format)
+    config.set('CONFIGS', 'tokenize_tool', tokenize_tool)
+    config.set('CONFIGS', 'export_list', export_list)
+    config.set('WINPATHS', 'batoken_filepath', batoken_filepath)
+    config.set('WINPATHS', 'openbatoken_filepath', openbatoken_filepath)
+    config.set('MACPATHS', 'batoken_filepath', batoken_filepath)
+    config.set('MACPATHS', 'openbatoken_filepath', openbatoken_filepath)
     with open('msxbadig.ini', 'wb') as configfile:
         config.write(configfile)
     raise SystemExit(0)
@@ -236,10 +215,10 @@ file_load = args.input
 file_save = args.output
 if args.output == '':
     save_path = os.path.dirname(file_load)
-    save_path = '' if save_path == '' else save_path + '/'
+    # save_path = '' if save_path == '' else save_path
     save_file = os.path.basename(file_load)
     save_file = os.path.splitext(save_file)[0] + '.asc'
-    file_save = save_path + save_file
+    file_save = os.path.join(save_path, save_file)
 line_start = abs(args.ls)
 line_step = abs(args.lp)
 leading_zero = args.lz
@@ -270,9 +249,9 @@ export_list = min(abs(args.el), 32)
 monitor_exec = args.exe
 is_from_build = args.frb
 if batoken_filepath == '':
-    batoken_filepath = local_path + 'MSXBatoken.py'
+    batoken_filepath = os.path.join(local_path, 'MSXBatoken.py')
 if openbatoken_filepath == '':
-    openbatoken_filepath = local_path + 'openMSXBatoken.py'
+    openbatoken_filepath = os.path.join(local_path, 'openMSXBatoken.py')
 if tokenize_tool == 'O':
     batoken_filepath = openbatoken_filepath
 
@@ -285,8 +264,8 @@ if capitalise_all:
 first_line = 'Converted with MSX Basic Dignified'
 second_line = 'https://github.com/farique1/msx-basic-dignified'
 var_dict = {}
-short_cur = 'z{'  # 'z{' is one above 'zz'
-load_path = os.path.dirname(file_load) + '/'
+short_cur = 'z{'  # 'z{' is one character above 'zz'
+load_path = os.path.dirname(file_load)
 
 
 def get_short_var(get_long_var):
@@ -1234,12 +1213,13 @@ if var_dict and long_var_summary > 0:
 
 show_log('', 'Adding line numbers and indent, applying label REMs', 3)
 show_log('', 'Converting CR and checking line size', 3, bullet=5)
+line_ending = '\n' if is_windows else '\r\n'
 arrayB = []
 line_list = {}
 for line, number, ident, blabel in zip(array, line_numbers, ident_sizes, branching_labels):
     line_num, line_alt, line_file = line
 
-    line_alt = number + ' ' + ident + line_alt + blabel.rstrip() + '\r\n'
+    line_alt = number + ' ' + ident + line_alt + blabel.rstrip() + line_ending
 
     line_lenght = len(line_alt) - 1
     if line_lenght > 256:
@@ -1274,13 +1254,13 @@ show_log('', '', 3, bullet=0)
 
 # Call MSX Basic Tokenizer
 export_file = os.path.basename(file_save)
-export_path = os.path.abspath(file_save)
+export_path = os.path.split(file_save)[0]
 if output_format == 'T' or output_format == 'B':
     name_prefix = '' if tokenize_tool == 'B' else 'open'
     show_log('', name_prefix + 'MSX Basic Tokenizer', 3, bullet=0)
     if is_from_build:
         show_log('', ''.join(['Converting ', file_save]), 3, bullet=0)
-        show_log('', ''.join(['To ', export_path, '/', os.path.splitext(export_file)[0] + '.bas']), 3, bullet=0)
+        show_log('', ''.join(['To         ', os.path.join(export_path, os.path.splitext(export_file)[0]) + '.bas']), 3, bullet=0)
     if os.path.isfile(batoken_filepath):
         btline = ''
         btarg = ['-frb'] * 4
@@ -1294,7 +1274,7 @@ if output_format == 'T' or output_format == 'B':
         if is_from_build:
             args_token = list(set(btarg))
             show_log('', ''.join(['With ', 'args ', ' '.join(args_token)]), 3, bullet=0)
-        batoken = ['python3', '-u', batoken_filepath, file_save, btarg[0], btarg[1], btarg[2], btarg[3]]
+        batoken = [python_app, '-u', batoken_filepath, file_save, btarg[0], btarg[1], btarg[2], btarg[3]]
         btoutput = subprocess.check_output(batoken)
         for line in btoutput:
             btline += chr(line)
