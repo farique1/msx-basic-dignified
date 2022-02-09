@@ -399,7 +399,7 @@ for line in array:
             included_dict[included_files] = file_include[0]
             if os.path.isabs(file_include[0]):
                 load_path = ''
-            arrayC = load_file(load_path + file_include[0], included_files, line, 'include')
+            arrayC = load_file(os.path.join(load_path, file_include[0]), included_files, line, 'include')
             arrayB.extend(arrayC)
             show_log(line, ' '.join(['file_included:', file_include[0]]), 4)
             continue
