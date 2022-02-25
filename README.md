@@ -79,7 +79,7 @@ Variables passed to **defines**  must be touching the closing bracket and be fol
 	`[?@]x,y ` is a built in **define** that becomes `LOCATEx,y:PRINT`, it must be followed by an empty space.  
 	>`[...]` constructs inside `REM`, `DATA` or `""`  will be identified as DEFINEs.  
   
-	```BlitzBasic  
+	```BASIC  
 	define [ifa] [if a$ = ], [enter] [chr$(13)]  
 	define [pause][if inkey$<>[" "] goto {@}]  
   
@@ -89,7 +89,7 @@ Variables passed to **defines**  must be touching the closing bracket and be fol
 	[pause][enter]  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 IF A$="2" THEN PRINT "dois"  
 	20 IF A$="4" THEN PRINT "quatro"  
 	30 LOCATE 10,10:PRINT "dez"  
@@ -110,7 +110,7 @@ Traditional one and two letters variables can be used normally alongside long na
 The conversion (and the MSX Syntax Highlight) will catch illegal variables when declaring but it is not always perfect on `~` so keep an eye on them.  
 A summary of the long and short name associations can be generated on `REM`s at the end of the converted code.  
   
-	```BlitzBasic  
+	```BASIC  
 	declare food, drink:dk  
 	if food$ = "cake" and drink = 3 then _  
 		~result$ = "belly full":  
@@ -118,11 +118,11 @@ A summary of the long and short name associations can be generated on `REM`s at 
 	endif  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 IF ZZ$="cake" AND DK=3 THEN ZY$="belly full":ZX=10  
 	```  
 	Optional, with  `msxbadig.py test.bad -vs`  
-	```BlitzBasic  
+	```BASIC  
 	20 ' ZZ-food, ZY-result, ZX-sleep, DK-drink  
 	```  
   
@@ -143,7 +143,7 @@ Upon conversion, function definitions and calls will follow the **label** config
 	> **Proto-function** definitions and calls cannot have the `_` line separator.  
 	> `.xxx()` constructs inside `REM`, `DATA` or `""` will be identified as function calls.  
   
-	```BlitzBasic  
+	```BASIC  
 	ch$ = .getUpper("a")  
 	print ch$  
 	end  
@@ -152,7 +152,7 @@ Upon conversion, function definitions and calls will follow the **label** config
 	return chr$(ch)  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 UP$="a":GOSUB 40:CH$=CHR$(CH)  
 	20 PRINT CH$  
 	30 END  
@@ -168,7 +168,7 @@ Underscores `_` can only be used at the end of a line and they are deleted when 
 Numbers at the start of a line will be removed, generate a warning. Numbers at the beginning of a line after an underscore break `_` will be preserved but numbers at the beginning of a line after a colon `:` break will be removed even if it is part of a `REM` (there is no need to break a `REM` line with an `:` anyway)  
 All of the warning situations above are highlighted with the MSX Syntax Highlight.  
   
-	```BlitzBasic  
+	```BASIC  
 	if a$ = "C" then _  
 		for f = 1 to 10:  
 			locate 1,1:print f:  
@@ -178,7 +178,7 @@ All of the warning situations above are highlighted with the MSX Syntax Highligh
 	endif  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 IF A$="C" THEN FOR F=1 TO 10:LOCATE 1,1:PRINT F:NEXT:LOCATE 1,3:PRINT "done":END  
 	```  
   
@@ -186,7 +186,7 @@ All of the warning situations above are highlighted with the MSX Syntax Highligh
 Regular `REM`s are kept. A tenacious bug (called My Own Regex Incompetency) prevents the `##` from being removed if there are any `"` after it. (this is so `##` are not removed inside quotes.)  
 **Block comments** can also be used, they can be `''` or `###`, the text inside the first one will be kept while the text inside the later will be removed. They will toggle the block if they are alone on a line, open it if at the start or close when at the end of a line. Regular `##` lines inside a `''` block will be removed.  
   
-	```BlitzBasic  
+	```BASIC  
 	## this will not be converted  
 	rem this will  
 	' this also will  
@@ -198,7 +198,7 @@ Regular `REM`s are kept. A tenacious bug (called My Own Regex Incompetency) prev
 	''  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 REM this will  
 	20 ' this also will  
 	30 ' And this stay  
@@ -206,7 +206,7 @@ Regular `REM`s are kept. A tenacious bug (called My Own Regex Incompetency) prev
 - Parts of the code can be tagged with **line toggles** to be removed on demand when converted. They have the format `#name` where `name` can be any combination of letters numbers and `_` and they can be kept by simply adding a `keep #name1 #name2`... on a line before them. `keep` can take none, one or more toggles on the same line, separated by spaces.  
 Toggles are used at the start of a line (`#1 print "Hello"`) and also can be alone on a line to denote the start and end of a whole section to be removed, just like block comments. They can be useful to debug different code snippets without having to comment and uncomment them every time. Block toggles can be nested but cannot be interleaved. If they are not closed a warning will be given.  
   
-	```BlitzBasic  
+	```BASIC  
 	keep #2  
 	#1 print "this will not be converted"  
 	#2 print "this will"  
@@ -217,7 +217,7 @@ Toggles are used at the start of a line (`#1 print "Hello"`) and also can be alo
 	#3  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 PRINT "this will"  
 	20 PRINT "this also will"  
 	```  
@@ -232,13 +232,13 @@ The supported unicode characters are:
 	>For extreme cases, MSX Sublime Tools has a TrueType MSX screen 0 font available. A Screen 1 font is on its way.  
   
   
-	```BlitzBasic  
+	```BASIC  
 	print "┌──────┐"  
 	print "│SAVING│"  
 	print "└──────┘"  
 	```  
 	`msxbadig.py test.bad -tr`  
-	```BlitzBasic  
+	```BASIC  
 	10 PRINT "<0x01>X<0x01>W<0x01>W<0x01>W<0x01>W<0x01>W<0x01>W<0x01>Y"  
 	20 PRINT "<0x01>VSAVING<0x01>V"  
 	30 PRINT "<0x01>Z<0x01>W<0x01>W<0x01>W<0x01>W<0x01>W<0x01>W<0x01>["  
@@ -247,7 +247,7 @@ The supported unicode characters are:
 - An external piece of Dignified code can be inserted anywhere using the **include** command.  
 `include "code.bad"` will insert the contents of `code.bad` exactly where the `include` was and can even have its lines joined with the main code by using `:` or `_` on any of the files.  
   
-	```BlitzBasic  
+	```BASIC  
 	print "This is the main file."  
 	'  
 	include "help.bad"  
@@ -255,7 +255,7 @@ The supported unicode characters are:
 	print "This is the main file again."  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 PRINT "This is the main file."  
 	20 '  
 	30 PRINT "This is a helper code."  
@@ -266,13 +266,13 @@ The supported unicode characters are:
   
 - **True** and **false** statements can be used with numeric variables, they will be converted to `-1` and `0` respectively and their variables can be treated as true booleans on `if`s and with `not` operators.  
   
-	```BlitzBasic  
+	```BASIC  
 	~variable = true  
 	~condition = false  
 	if condition then variable = not variable  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 ZZ=-1  
 	20 ZY=0  
 	30 IF ZY THEN ZZ=NOT ZZ  
@@ -281,12 +281,12 @@ The supported unicode characters are:
 - **Shorthand and compound** arithmetic operators (`++`, `--`, `+=`, `-=`, `*=`, `/=`, `^=`) can be used and will be converted to normal MSX Basic operations.  
 If the **unpack operator** (`-uo`) argument is used, the conversion will try to preserve the spaces used with the operators.  
   
-	```BlitzBasic  
+	```BASIC  
 	PX++ :PY --  
 	LO+=20 :DI -= 10  
 	```  
 	`msxbadig.py test.bad -uo`  
-	```BlitzBasic  
+	```BASIC  
 	10 PX=PX+1:PY = PY - 1  
 	20 LO=LO+20:DI = DI - 10  
 	```  
@@ -348,7 +348,7 @@ ini: `line_step = [#]` arg: `-lp [#]` Default: `10`
 Line numbers can be padded with zeroes.  
 ini: `leading_zeros = [true,false]` arg: `-lz` Default: `false`  
   
-```BlitzBasic  
+```BASIC  
 {do_stuff}  
 	print "Say something"  
 	do$ = "Do something"  
@@ -356,7 +356,7 @@ goto {do_stuff}
 ```  
 ###  
 `msxbadig.py test.bad -ls 5 -lp 5`  
-```BlitzBasic  
+```BASIC  
 5 ' {do_stuff}  
 10 PRINT "Say something"  
 15 DO$="Do something"  
@@ -364,7 +364,7 @@ goto {do_stuff}
 ```  
 ###  
 `msxbadig.py test.bad -ls 1 -lp 50 -lz`  
-```BlitzBasic  
+```BASIC  
 001 ' {do_stuff}  
 051 PRINT "Say something"  
 101 DO$="Do something"  
@@ -382,27 +382,27 @@ ini: `handle_label_lines = [0,1,2]` arg: `-ll <0,1,2>` Default: `2`
 Add a `:rem` at the end of lines with branching instructions showing the name of the labels used, making it easier to visualize the flow on the converted code.  
 ini: `show_branches_labels = [true,false]` arg: `-sl` Default: `false`  
   
-```BlitzBasic  
+```BASIC  
 {print_result}  
 	print "Result"  
 if r$ = "Result" goto {print_result} else goto {@}  
 ```  
 ###  
 `msxbadig.py test.bad -ll 2`  
-```BlitzBasic  
+```BASIC  
 10 PRINT "Result"  
 20 IF R$="Result" GOTO 10 ELSE GOTO 20  
 ```  
 ###  
 `msxbadig.py test.bad -ll 1`  
-```BlitzBasic  
+```BASIC  
 10 '  
 20 PRINT "Result"  
 30 IF R$="Result" GOTO 10 ELSE GOTO 30  
 ```  
 ###  
 `msxbadig.py test.bad -ll 0 -sl`  
-```BlitzBasic  
+```BASIC  
 10 ' {print_result}  
 20 PRINT "Result"  
 30 IF R$="Result" GOTO 10 ELSE GOTO 30:' {print_result} {SELF}  
@@ -422,14 +422,14 @@ Add a blank line **before** or **after** a label. (has no effect if the line lab
 `b` Before, `a` after, `ba` before and after.  
 ini: `label_gap = [b,a,ba]` arg: `-lg <b,a,ba>` Default: `none`  
   
-```BlitzBasic  
+```BASIC  
 {print_result}  
 	PRINT "Result"  
   
 	GOTO {print_result}  
 ```  
 `msxbadig.py test.bad -bl -lg a`  
-```BlitzBasic  
+```BASIC  
 10 ' {print_result}  
 20 '  
 30 PRINT "Result"  
@@ -454,13 +454,13 @@ ini: `general_spaces = [0,1,k]` arg: `-gs <0,1,k>` Default: `0`
 All spaces surrounding mathematical operators and punctuation (`+-=<>*/^\.,;`) are stripped by default. They can be kept as general spaces using:  
 ini: `unpack_operators = [true,false]` arg: `-uo` Default: `false`  
   
-```BlitzBasic  
+```BASIC  
 for f = 10  to 7  :read a:print a  : next  
 for f = 0   to 9  :read a:print a  : next  
 for f = 100 to 300:read a:print a+1: next  
 ```  
 `msxbadig.py test.bad -gs 0 -cs b`  
-```BlitzBasic  
+```BASIC  
 10 FORF=10TO7 :READA :PRINTA :NEXT  
 20 FORF=0TO9 :READA :PRINTA :NEXT  
 30 FORF=100TO300 :READA :PRINTA+1 :NEXT  
@@ -473,14 +473,14 @@ for f = 100 to 300:read a:print a+1: next
 Maintain the original indentations. **TAB**s  are converted  to a specified number of **spaces** (2 by default).  
 ini: `keep_indent = [#]` arg: `-ki [#]`  Default: `2`  
   
-```BlitzBasic  
+```BASIC  
 for f = 1 to 200  
 	print "Beware"  
 	 if f = 100 then print "Middle point reached!"  
 next  
 ```  
 `msxbadig.py test.bad -ki 3`  
-```BlitzBasic  
+```BASIC  
 10 FOR F=1 TO 200  
 20    PRINT "Beware"  
 30     IF F=100 THEN PRINT "Middle point reached!"  
@@ -498,13 +498,13 @@ ini: `new_rem_format = [s,rem]`  arg: `-nr <s,rem>`  Default: `s`
 All **pre existing** `REM`s (not added by **MBD**) can be changed to maintain coherence along the converted code. The conversion will conform to the condition above.  
 ini: `convert_rem_formats = [true,false]`  arg: `-cr`  Default: `false`  
   
-```BlitzBasic  
+```BASIC  
 {start_tutorial}  
 	print "What tutorial?"  
 	' Nevermid  
 ```  
 `msxbadig.py test.bad -nr rem -cr`  
-```BlitzBasic  
+```BASIC  
 10 REM {start_tutorial}  
 20 PRINT "What tutorial?"  
 30 REM Nevermid  
@@ -523,7 +523,7 @@ ini: `convert_interr_to_print = [true,false]`  arg: `-cp`  Default: `false`
 MSX Basic doesn't need both `THEN` or `ELSE` and `GOTO` if they are adjacent. The converted code can be told to strip `THEN` (option `t`), `GOTO` (option `g`, default) or they can all be left alone (option `k`)  
 ini: `strip_then_goto = [t,g,k]`  arg: `-tg <t,g,k>`  Default: `g`  
   
-```BlitzBasic  
+```BASIC  
 {at_last}  
 	? "What?"  
 	if me$ = "Huh?" then goto {at_last} else goto {i_agree}  
@@ -532,7 +532,7 @@ ini: `strip_then_goto = [t,g,k]`  arg: `-tg <t,g,k>`  Default: `g`
 	? "That is (almost) all folks."  
 ```  
 `msxbadig.py test.bad -nc -cp -tg t`  
-```BlitzBasic  
+```BASIC  
 10 ' {at_last}  
 20 print "What?"  
 30 if me$="Huh?" then 10 else 50  
