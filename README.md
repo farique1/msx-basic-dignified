@@ -52,7 +52,7 @@ Labels marking a section are called Line Labels and labels on jump instructions 
 A comment can be used after a line label using a `'` (`REM` is not supported) and it will stay after the conversion as an addition to the label or alone on the line, depending on the label conversion argument used.  
 Labels not following the naming convention, duplicated line labels, labels branching to inexistent line labels and loop labels not closed will generate an error and stop the conversion. Labels with illegal characters are higlighted when using the MSX Syntax Highlight.  
   
-	```BlitzBasic  
+	```BASIC  
 	{hello_loop}  
 	print "press A to toggle"  
 	if inkey$ <> "A" then goto {@}  
@@ -62,7 +62,7 @@ Labels not following the naming convention, duplicated line labels, labels branc
 	}  
 	```  
 	`msxbadig.py test.bad`  
-	```BlitzBasic  
+	```BASIC  
 	10 PRINT "press A to toggle"  
 	20 IF INKEY$<>"A" THEN 20  
 	30 PRINT "hello world"  
