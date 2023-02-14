@@ -1,5 +1,8 @@
-<img src="https://github.com/farique1/msx-basic-dignified/blob/master/Images/GitHub_Badig_Logo-02.png" alt="MSX Basic Dignified" width="290" height="130">  
-  
+# ⛔️ DEPRECATED
+### This repo is part of a series of tools that were integrated into the [Basic Dignified Suite](https://github.com/farique1/basic-dignified). The newer versions are available there. This version is out of date and will no longer be supported here.    
+### This repo now exists for archival purpose only.   
+----------------------------
+
 # MSX Basic Dignified  
 **v1.6**  
   
